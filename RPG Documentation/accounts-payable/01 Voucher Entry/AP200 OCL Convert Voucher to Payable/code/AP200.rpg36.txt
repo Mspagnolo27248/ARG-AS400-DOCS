@@ -1,0 +1,1082 @@
+0002 H    P064                      B                                     AP200
+0006 F*
+0007 F* A/P PURCHASE REGISTER
+     F*
+LT01 F* LT01 - SEPT 2011 LINDA TURCOVSKI  (LINK COMPUTER)
+LT01 F* ADDED BILLING FIELDS  (ORDER NUMBER, ORDER SRN, CARRIER ID)
+     F*
+JB02 F* JB02 - 09/30/2011  JAN BECCARI - FREEDOM RESOURCES
+JB02 F* INITIALIZE NEW FIELDS
+     F*
+JB03 F* JB03   090214  JAN BECCARI - FREEDOM RESOURCES - 724.693.2582
+JB03 F* ACH REVISION - ALLOW HOLD CD TO BE H, A (ACH) W (WIRE TRANSFER) E OR U
+JB03 F*                AND PAID CD TO BE P, A, W, OR E
+     F*
+JB04 F* JB04   050613  JAN BECCARI - FREEDOM RESOURCES
+JB04 F* REVISE PURCHASE REGISTER TO PRINT ORDER, SRN & CARRIER ID
+     F*
+JK01 F* JK01   112613  JIM KRAJACIC
+JK01 F* ZERO OUT FIELD OHKYM8 ON ADD
+0008 F*
+MG05 F* MG05   03/07/15 MARTY GREENBERG
+MG05 F* ADDED CODE TO PROCESS AP DISCOUNTS
+     F*
+JK02 F* JK02   032715  JIM KRAJACIC
+JK02 F* ADDED CODE TO PRINT PROCESS TYPE FOR (PAPER/ARGLMS/NORMAL)
+JK02 F* ADDED CODE TO UPDATE FILE FRCINH (REMOVE "Y" IN FIELD
+JK02 F* FRAPST IF VOUCHER IS FLAGED AS DELETED)
+     F*
+JB07 F* JB07   071216  JAN BECCARI
+JB07 F* REVISE THE UPDATING OF AP STATUS CODE IN FRCINH
+JB07 F* TO ONLY BE BLANKED IF IT'S A 'Y'.
+     F*
+JB08 F* JB08 - 12/26/2018 JAN BECCARI
+JB08 F* REVISE TO USE TABLE FRCFBH SAME AS FRCINH (ALREADY USING THIS ONE)
+JB08 F* - GET FRCFBH BEFORE FRCINH
+     F*
+MG09 F* JB09 - 06/05/2022 MARTY GREENBERG
+MG09 F* ADDED CODE TO PROCESS DISCOUNT DUE DATE
+     F*
+MG10 F* MG10 - 01/09/2024 MARTY GREENBERG
+MG10 F* ADDED 'U' CODE TO HOLD FIELD FOR UTILITY AUTO-PAY
+     F*
+0008 F*
+0009 FAPTRAN  IP  F 404 404            DISK
+0010 FAPCONT  UC  F 256 256R 2AI     2 DISK
+0011 FAPVEND  UC  F 579 579R 7AI     2 DISK
+0012 FAPOPEN  IF  F 384 384L16AI     2 DISK
+0013 FAPOPENH UC  F 384 384R16AI     2 DISK                      A
+0014 FAPOPEND UC  F 384 384R16AI     2 DISK                      A
+0015 FAPOPENV UC  F 384 384R16AI     2 DISK                      A
+0016 FAPINVH  IC  F  64  64R32AI     2 DISK                      A
+0017 FPOFILEH UC  F 256 256R11AI     2 DISK
+0018 FPOFILED UC  F 256 256R11AI     2 DISK
+0019 FAPHISTH O   F 384 384            DISK                      A
+0020 FAPHISTD O   F 384 384            DISK                      A
+0021 FAPHISTV O   F 384 384            DISK                      A
+0022*F*CTRAN  O   F 128 128  5AI     2 DISK                      A
+0023 FAPPJJR  O   F 144 144            DISK                      A
+0024 FAPPYTR  UC  F 128 128R 5AI     2 DISK                      A
+JK02 FFRCINH  UF  F 206 206 33AI     2 DISK
+JB08 FFRCFBH  UF  F 206 206 39AI     2 DISK
+     FAPPRINT O   F 164 164     OF     PRINTER
+0026 E                    SEP        82  2
+0028 IAPTRAN  NS  01   9 C0  10 C0  11 C0
+0030 I*  HEADER
+0032 I                                        1   1 ATHDEL                HDR DELETE
+0033 I                                        2   30ATCONOL2              COMPANY NO
+0034 I                                        4   80ATENT#L1              ENTRY NO
+0035 I                                        9  110ATENSQ                ENTRY SEQ NO
+0036 I                                       12  160ATVEND                VENDOR NO
+0037 I                                       18  220ATCNVO                CANCELED VOUCHER
+0038 I                                       24  310ATAPGL                ACCT PAY G/L #
+0040 I                                       42  66 ATIDES                INVOICE DESCRIPT
+0041 I                                       67  720ATINDT                VENDOR INV DT
+0042 I                                       73  780ATDUDT                DUE DATE
+0043 I                                       79  79 ATSNGL                SINGLE CHECK
+0044 I                                       80  80 ATHOLD                H=HOLD
+0045 I                                       81 105 ATHLDD                HOLD DESCRIPTION
+0046 I                                      106 106 ATPAID                P=PREPAID
+0047 I                                      107 1120ATPPCK                CHK NO.- PREPAY
+0048 I                                      113 122 ATVN10
+0049 I                                      113 142 ATVNAM                VENDOR NAME
+0050 I                                      143 172 ATVAD1                ADDRESS LINE 1
+0051 I                                      173 202 ATVAD2                ADDRESS LINE 2
+0052 I                                      203 232 ATVAD3                ADDRESS LINE 3
+0053 I                                      233 262 ATVAD4                ADDRESS LINE 4
+0054 I                                      263 2700ATBKGL                BANK G/L #
+0055 I                                      282 2890ATRTGL                RETENTION GL
+0056 I                                      290 2953ATRTPC                RETENTION PCT
+0057 I                                      296 3010ATPCKD
+0058 I                                      300 3010ATPCYY
+0059 I                                      302 3090ATIND8                VENDOR INV DT
+0060 I                                      310 3170ATDUD8                DUE DATE
+0061 I                                      318 3250ATPCK8                PREPAID CK DATE
+     I                                      326 3322ATFRTL                TOTAL FRIEGHT TO ALLOCATE
+JB01 I                                      348 3530ATSORN                SALES ORDER NUMBER
+JB01 I                                      354 3560ATSSRN                SALES SRN NUMBER
+     I                                      357 362 ATCAID                CARRIER ID
+MG05 I                                      363 3640ATTERM                VENDOR PAYMENT TERMS
+JK01 I                                      365 370 ATPTYP                PROCESS TYPE
+MG09 I                                      371 3760ATDSDT                DISCOUBT DUE DATE
+MG09 I                                      377 3840ATDSD8                DISCOUBT DUE DATE
+0039 I                                      385 404 ATINV#                VENDOR INV NO
+0039 I                                      385 394 ATIN10                VENDOR INV NO
+0063 I*  DETAIL LINE RECORD
+0065 I        NS  02   1NCD
+0066 I                                        2   30ATCONOL2              COMPANY NO
+0067 I                                        4   80ATENT#L1
+0068 I                                       12  160ATVEND                VENDOR NO
+0069 I                                       18  190ATEXCO                EXPENSE CO #
+0070 I                                       20  270ATEXGL                EXPENSE G/L #
+0071 I                                       28  52 ATDDES                DETAIL DESCRIPTN
+0072 I                                    P  53  582ATAMT                 DETAIL LINE AMT
+0073 I                                    P  59  642ATDISC                DISCOUNT
+0074 I                                       65  693ATDSPC                DISCOUNT PERCENT
+0075 I*
+0076 I* THE FOLLOWING FIELDS ARE NO LONGER SUPPORTED THRU THE A/P SYSTEM.
+0077 I*
+0078 I****                                   70  780ATPO#                 PURCHASE ORDER #
+0079 I                                       79  91 ATITEM                INVENTORY ITEM #
+0080 I                                    P  92  970ATQTY                 INVENTORY QTY
+0081 I                                       98  99 ATUNMS                UNIT OF MEASURE
+0082 I*
+0083 I                                      100 105 ATJOB#                JOB #
+0084 I                                      108 113 ATCCOD                JOB COST CODE
+0085 I                                      114 115 ATCTYP                JOB COST TYPE
+0086 I                                    P 116 1192ATJQTY                JOB COST QTY
+0087 I*
+0088 I* NEW FIELD SUPPORTED THRU THE A/P SYSTEM, TIED INTO THE P/O SYSTEM AS OF 09/90.
+0089 I*
+0090 I******                                120 1250ATPONO                P/O NO
+0091 I* ADDITIONAL FIELDS REQUIRED BY A.R.G.
+0092 I                                    P 126 1290ATGALN                GALLONS
+0093 I                                      130 1360ATRCPT                RECEIPT NUMBER
+0094 I                                      137 137 ATCLCD
+0095 I                                      138 1400ATPOSQ
+     I                                    P 141 1462ATPRAM                PRODUCT AMOUNT
+     I                                    P 147 1502ATFRAM
+0078 I                                      151 180 ATPONO                PURCHASE ORDER #
+0096 I        NS  09
+0098 IAPCONT  NS
+0099 I                                        4  33 ACNAME
+0100 I                                       58  650ACICGL
+0101 I                                       66  670ACJRNL
+0102 I                                       81  850ACNXVO
+0103 I                                       96  96 ACPOYN
+0105 IAPVEND  NS
+0106 I                                    P 195 2002VN$YTD
+0107 I                                    P 225 2292VNPURC
+0108 I                                    P 235 2392VNCBAL
+0110 IAPOPEN  NS
+0111 I                                        2  17 OPKY
+0112 I                                        2   8 OPKY1
+0113 I                                        9  17 OPKY2
+0114 I                                        2  130OPCVV
+0115 I                                       14  140OPRCTY
+0116 I                                        1 256 OPDATA
+0117 I                                      257 320 OPDAT2
+0116 I                                        1 253 OPDAT3
+0116 I                                      254 261 OPDAT4
+0116 I                                      262 289 OPDAT5
+0116 I                                      315 384 OPDAT6
+0119 IAPOPENH NS
+0120 IAPOPEND NS
+0121 IAPOPENV NS
+0123 IAPINVH  NS
+0125 IPOFILEH NS      10 C0  11 C0  12 C0
+0126 I                                        1   1 PODEL
+0127 I                                       87  87 POCOMP                COMPLETE
+0128 I                                    P  91  962POAPPU
+0129 I                                      141 1460POCLDT                P/O CLOSE DATE
+0130 I                                      147 147 POCLCD                P/O CLOSE CODE
+0131 IPOFILED NS
+0132 I                                        1   1 PDDEL                 MISC DESC.
+0133 I                                      109 1150PDRCQT                REC. QTY
+0134 I                                      116 1210PDRCDT                REC. DATE
+0135 I                                      122 122 PDCOMP                LINE COMPLETE -C
+0136 I                                    P 169 1742PDAPV$                P/O A/P VOUCHER$
+0138 IAPPYTR  NS
+JK02 IFRCINH  NS
+JB07 I                                      106 106 FRAPST
+JB08 IFRCFBH  NS
+JB08 I                                      106 106 FRAPST
+0140 I            DS
+0141 I                                        1  32 INVHKY
+0142 I                                        1   70COVEND
+0143 I                                        1   20ATCONO
+0144 I                                        3   70ATVEND
+0145 I                                        8  27 ATINV#
+0146 I                                       28  320VOUCHR
+0148 I            DS
+0149 I                                        1  110POKEY
+0150 I*****                                   3   8 ATPONO
+0152 I           UDS
+0153 I                                       96  970KYPDYY
+0154 I                                       98  990KYPD
+0155 I                                      100 1050JRDATE
+0156 I                                      100 1010JRMTH
+0157 I                                      100 1010M
+0158 I                                      102 1030JRDAY
+0159 I                                      151 154 JRNID
+0160 I                                      198 199 WIRE                  WT = WIRE TRANSFER
+0161 I                                      200 220 WIREDS
+     I                                      300 301 WORKST
+0162 I                                      509 5100Y2KCEN                 19
+0163 I                                      511 5120Y2KCMP                 80
+0165 C* * * * * * * * * * * * * * * * * * * * *
+0166 C           ONCE      IFEQ *ZEROS                      B1
+0167 C           JRDATE    MULT 10000.01  PJYMD   60
+0168 C                     MOVELPJYMD     JRYR    20
+0169 C           JRYR      IFGE Y2KCMP
+0170 C                     Z-ADDY2KCEN    JCN     20
+0171 C                     ELSE
+0172 C           1         ADD  Y2KCEN    JCN
+0173 C                     END
+0174 C                     MOVELJCN       PJYMD8  80
+0175 C                     MOVE PJYMD     PJYMD8
+0176 C                     MOVE '* '      SEP
+0177 C                     Z-ADD01        ONE3    30
+JB02 C                     Z-ADD*ZEROS    Z5      50
+0178 C                     Z-ADD*ZEROS    Z6      60
+0179 C                     Z-ADD*ZEROS    Z7      70
+0180 C                     Z-ADD*ZEROS    Z8      80
+0180 C                     Z-ADD*ZEROS    Z6      60
+0180 C                     Z-ADD*ZEROS    Z9      90
+0181 C                     Z-ADD*ZEROS    Z10    100
+0181 C                     Z-ADD*ZEROS    Z4      40
+0182 C                     Z-ADD*ZEROS    Z11    110
+0182 C                     Z-ADD*ZEROS    Z5      50
+0182 C                     Z-ADD1         ONE1    10
+0182 C                     Z-ADD1         ONE3    30
+0182 C                     Z-ADD2         TWO1    10
+0182 C                     Z-ADD3         THREE1  10
+0183 C                     MOVE '000'     POKEY
+0184 C                     ADD  1         ONCE    10
+0185 C                     END                              E1
+0186 C*
+0187 C                     SETOF                     2930
+0188 C*
+0189 C   L2                EXSR L2DET
+0190 C*
+0191 C   L1                EXSR L1DET
+0192 C*
+0193 C                     SETOF                     60
+0194 C*
+0195 C   01                EXSR EACH01
+0196 C   02 10             EXSR EACH02
+0197 C*
+0198 CL1    10             EXSR L1TOT
+0199 C*
+0200 CL2         ATCONO    CHAINAPCONT               92
+0201 CL2N92                EXCPTUPDCO
+0202 C* * * * * * * * * * * * * * * * * * * * *
+0203 CSR         L2DET     BEGSR                                                L 2 D E T
+0204 C*
+0205 C                     Z-ADD*ZEROS    PAGE
+0206 C                     TIME           TIMDAT 120
+0207 C                     MOVELTIMDAT    SYSTIM  60
+0208 C                     MOVE TIMDAT    SYSDAT  60
+0208 C           SYSDAT    MULT 10000.01  SYSYMD  60
+0208 C                     MOVEL20        SYSDT8  80
+0208 C                     MOVE SYSYMD    SYSDT8
+0209 C*
+0210 C                     MOVELATCONO    POKEY
+0211 C           ATCONO    CHAINAPCONT               92
+0212 C                     Z-ADDACNXVO    NXTVO   50
+0213 C*
+0214 C* "WT" WIRE TRANSFERS USE WT JOURNAL ID.
+0215 C           WIRE      IFEQ 'WT'                       B1
+0216 C                     MOVEL'WT'      JRNID
+0217 C                     ELSE                            X1
+MG01 C           WIRE      IFEQ 'EE'
+MG01 C                     MOVEL'EE'      JRNID   4
+MG01 C                     ELSE                            X1
+0218 C                     MOVEL'PJ'      JRNID   4
+0219 C                     END                             E1
+0219 C                     END                             E1
+0220 C                     MOVE ACJRNL    JRNID
+0221 C*
+0222 C  N92                ADD  1         ACJRNL
+0223 C  N92                EXCPTUPDCO
+0224 C*
+0225 C                     Z-ADD*ZEROS    L2PAMT 112
+0225 C                     Z-ADD*ZEROS    L2FAMT  72
+0225 C                     Z-ADD*ZEROS    L2AMT  112
+0226 C                     Z-ADD*ZEROS    L2DISC 112
+0227 C*
+0228 CSR                   ENDSR
+0229 C* * * * * * * * * * * * * * * * * * * * *
+0230 CSR         L1DET     BEGSR                                                L 1 D E T
+0231 C*
+0232 C                     SETOF                     03
+0233 C                     SETOF                     101213
+JB03 C                     SETOF                     242532
+JB04 C                     SETOF                     19
+0234 C                     Z-ADD*ZEROS    L1PAMT  72
+0234 C                     Z-ADD*ZEROS    L1FAMT  72
+0234 C                     Z-ADD*ZEROS    L1AMT  112
+0235 C                     Z-ADD*ZEROS    L1DISC  92
+0236 C                     Z-ADD*ZEROS    L1RTAM 112
+0237 C                     Z-ADD*ZEROS    L1RTDS  92
+0238 C                     Z-ADD*ZEROS    SEQ#    30
+0239 C*
+0240 CSR                   ENDSR
+0241 C* * * * * * * * * * * * * * * * * * * * *
+0242 CSR         EACH01    BEGSR                                                E A C H 0 1
+0243 C*
+0244 C* HEADER
+0245 C*
+0246 C           ATHDEL    COMP 'D'                  1010
+     C*
+     C* BLANK AP STATUS IN FRCINH IF THIS VOUCHER IS BEING DELETED
+     C* AND CARRIER INVOICE IS CODED TO HAVE BEEN SELECTED FOR AP
+     C* (AP STATUS IS 'Y')
+JB08 C  N10                DO                              B1
+JB08 C                     SETON                     99
+JK02 C                     MOVELATCONO    FRCKEY 33
+JK02 C                     MOVELATCAID    FRCK31 31
+JK02 C                     MOVELATINV#    FRCK25 25
+JK02 C                     MOVE FRCK25    FRCK31
+JK02 C                     MOVE FRCK31    FRCKEY
+JB08 C*     LOOK FOR FRT BILL OVERRIDE HEADER FIRST
+JB08 C           ATSORN    IFNE *ZEROS                     B2
+JB08 C                     MOVELFRCKEY    FRCK39 39
+JB08 C                     MOVE ATSORN    FRCK39
+JB08 C           FRCK39    CHAINFRCFBH               99
+JB08 C     N99   FRAPST    IFEQ 'Y'                        B
+JB08 C     N99             EXCPTAPFBST
+JB08 C                     END                             E
+JB08 C*     OR LOOK FOR CARRIER INVOICE HEADER
+JB08 C   99                DO                              B3
+JK02 C           FRCKEY    CHAINFRCINH               99
+JB07 C     N99   FRAPST    IFEQ 'Y'                        B
+JK02 C     N99             EXCPTAPINST
+JB07 C                     END                             E
+JB08 C                     END                             E3
+JB08 C                     END                             E2
+     C*
+0247 C  N10                GOTO END01
+JB08 C                     END                             E1
+JB08 C*------------------------------------------------------
+0248 C*
+0249 C           ATINDT    MULT 10000.01  INDT    60
+0250 C           ATDUDT    MULT 10000.01  DUDT    60
+0251 C           ATPCKD    MULT 10000.01  PCKD    60
+0251 C           ATDSDT    MULT 10000.01  DSDT    60
+0252 C*
+0253 C           ATVEND    COMP *ZEROS                   03ONE TIME VENDOR
+0254 C           ATCNVO    COMP *ZEROS               1212  CANCEL VOUCHER
+0255 C           ATPAID    COMP 'P'                      13PREPAID
+JB03 C           ATPAID    COMP 'A'                      24PREPAID ACH
+JB03 C           ATPAID    COMP 'W'                      25PREPAID WT
+MG01 C           ATPAID    COMP 'E'                      32PREPAID EE
+0256 C           ATSNGL    COMP 'S'                      14SINGLE CHECK
+0257 C           ATHOLD    COMP 'H'                      17HOLD VOUCHER
+JB03 C        N17ATHOLD    COMP 'A'                      17HOLD VOUCHER FOR ACH
+JB03 C        N17ATHOLD    COMP 'W'                      17HOLD VOUCHER FOR WT
+MG01 C        N17ATHOLD    COMP 'E'                      17HOLD VOUCHER FOR EE
+MG10 C        N17ATHOLD    COMP 'U'                      17HOLD VOUCHER FOR UTIL AUTOPAY
+     C*
+JB04 C           ATSORN    COMP *ZERO                1919  SALES ORDER # ENTERED
+0258 C*
+0259 C                     SETOF                       2627
+0260 C           ATRTPC    COMP *ZEROS               2626  RETENTION
+0261 C   26      ATRTPC    COMP 100.000                  27
+0262 C*
+0263 C  N12                Z-ADDNXTVO     VOUCHR  50
+0264 C  N12                ADD  1         NXTVO          30
+0265 C  N12 30             Z-ADD1         NXTVO
+0266 C  N12 26N27          Z-ADDNXTVO     RTVO    50
+0267 C  N12 26N27          ADD  1         NXTVO          30
+0268 C  N12 26N27
+0269 CAN    30             Z-ADD1         NXTVO
+0270 C  N12 26 27          Z-ADDVOUCHR    RTVO
+0271 C*
+0272 C   12                EXSR CANCEL
+0273 C   12                Z-ADDATCNVO    VOUCHR
+0274 C*
+0275 C* WRITE A PAYMENT TRANSACTION RECORD FOR EACH PREPAID VOUCHER
+JB03 C*    13 = PPD CHECK, 24 = PPD ACH, 25 = PPD WIRE TRANSFER
+JB03 C*    32 = PPD EMPL EXPENSE
+0276 C*
+JB03 C   13
+JB03 COR 24
+JB03 COR 25
+JB03 COR 32                ADD  10        PTSEQ#  50
+JB03 C   13
+JB03 COR 24
+JB03 COR 25
+JB03 COR 32      PTSEQ#    CHAINAPPYTR               78
+JB03 C   13 78
+JB03 COR 24 78
+JB03 COR 25 78
+JB03 COR 32 78             EXCPTUPPYTR
+0280 C*
+0281 CSR         END01     ENDSR                                                E N D 0 1
+0282 C* * * * * * * * * * * * * * * * * * * * *
+0283 CSR         EACH02    BEGSR                                                E A C H 0 2
+0284 C*
+0285 C* DETAIL LINE
+0286 C*
+0287 C* PRINT "GALLONS" & "RECEIPT#"
+0288 C           ATGALN    COMP *ZEROS               6060
+0289 C*
+0290 C                     Z-ADDATDISC    ATDIS9  92
+0291 C*
+     C                     SETOF                     18
+0292 C                     MOVEL*BLANKS   DESC20 20
+0293*C****       ATJOB#    COMP *BLANKS              1818
+0294*C***18                Z-ADDATAMT     ATJCAM 112
+0295*C***18                MOVELATDDES    DESC20
+0296*C***18                ADD  10        JCSEQ   50
+0297*C***18                EXCPTADDJC
+0298 C*
+0299 C           ATDSPC    COMP *ZEROS               1515
+0300 C   15      ATDISC    COMP *ZEROS                   15
+0301 C   15      ATDSPC    DIV  100       PCTWRK  65H
+0302 C   15      ATAMT     MULT PCTWRK    ATDISC    H
+0303 C*
+0304 C   18 26N27ATRTPC    DIV  100       PCTWRK    H
+0305 C   18 26N27ATAMT     MULT PCTWRK    ATRTAM 112H
+0306 C   18 26N27ATAMT     SUB  ATRTAM    ATAMT
+0307 C   18 26N27          Z-ADD*ZEROS    ATRTDS  92
+0308 C*
+0309 C   18 26 27          Z-ADDATAMT     ATRTAM
+0310 C   18 26 27          Z-ADD*ZEROS    ATAMT
+0311 C   18 26 27          Z-ADDATDISC    ATRTDS
+0312 C   18 26 27          Z-ADD*ZEROS    ATDISC
+0313 C*
+0314 C           ATDISC    COMP *ZEROS               7979
+0315 C   79      PTSEQ#    CHAINAPPYTR               78
+0316 C   79N78             EXCPTUPPYTR
+0317 C*
+0318 C                     ADD  ATAMT     L1AMT
+0318 C                     ADD  ATPRAM    L1PAMT
+0318 C                     ADD  ATFRAM    L1FAMT
+0319 C                     ADD  ATDISC    L1DISC
+0320 C                     ADD  ATRTAM    L1RTAM
+0321 C                     ADD  ATRTDS    L1RTDS
+0322 C*
+0323 C           ATCONO    COMP ATEXCO               2929
+0324 C   29                EXSR INTRCO
+0325 C*
+0326 C                     ADD  1         SEQ#
+0327 C*
+0328 C* P/O SYSTEM CODE
+0329 C*
+0330 C                     SETOF                     45
+0331 C*
+     C**** SKIP ALL THIS
+     C                     GOTO SKIP
+     C*
+0332 C           ACPOYN    IFEQ 'Y'                         B1
+0333 C           ATPONO    IFNE *BLANKS                     B2
+0334 C*
+0335 C                     SETON                     45
+0336 C*
+0337 C                     MOVE '000'     POKEY
+0338 C           POKEY     CHAINPOFILEH              46
+0339 C  N46                DO                                 B3
+0340 C                     ADD  ATAMT     POAPPU
+0341 C                     EXCPTPOUPD
+0342 C                     END                                E3
+0343 C*
+0344 C                     MOVE ATPOSQ    POKEY
+0345 C           POKEY     CHAINPOFILED              46
+0346 C  N46                DO                                 B3
+0347 C                     ADD  ATQTY     PDRCQT
+0348 C                     ADD  ATAMT     PDAPV$
+0349 C           ATCLCD    IFNE 'O'                           B4
+0350 C                     MOVEL'C'       PDCOMP
+0351 C                     Z-ADDPJYMD     PDRCDT
+0352 C                     ELSE                               X4
+0353 C                     MOVEL'O'       PDCOMP
+0354 C                     Z-ADD*ZERO     PDRCDT
+0355 C                     END                                E4
+0356 C                     EXCPTPDUPD
+0357 C                     END                                E3
+0358 C*
+0359 C                     END                              E2
+0360 C                     END                              E1
+0361 C*
+     C           SKIP      TAG
+0362 CSR                   ENDSR
+0363 C* * * * * * * * * * * * * * * * * * * * *
+0364 CSR         CANCEL    BEGSR                                                C A N C E L
+0365 C*
+0366 C* CANCEL VOUCHER
+0367 C*
+0368 C                     MOVELCOVEND    OPKY12 120
+0369 C                     MOVE ATCNVO    OPKY12
+0370 C                     MOVELOPKY12    OPKEY  16
+0371 C           OPKEY     SETLLAPOPEN
+0372 C*
+0373 C           RDAGN     TAG                                                  R D A G N
+0374 C*
+0375 C                     SETOF                     98
+0376 C                     READ APOPEN                   98
+0377 C  N98      OPKY12    COMP OPCVV                9898
+0378 C  N98                DO                               B1
+0379 C           OPRCTY    COMP 1                        21
+0380 C           OPRCTY    IFEQ 1
+0381 C           OPKY      CHAINAPOPENH              99
+0382 C  N99                EXCPTUPCNCH
+0383 C                     END
+0384 C           OPRCTY    COMP 2                        22
+0385 C           OPRCTY    IFEQ 2
+0386 C           OPKY      CHAINAPOPEND              99
+0387 C  N99                EXCPTUPCNCD
+0388 C                     END
+0389 C           OPRCTY    COMP 3                        23
+0390 C           OPRCTY    IFEQ 3
+0391 C           OPKY      CHAINAPOPENV              99
+0392 C  N99                EXCPTUPCNCV
+0393 C                     END
+0394 C   21                EXCPTADDHIH
+0395 C   22                EXCPTADDHID
+0396 C   23                EXCPTADDHIV
+0397 C                     GOTO RDAGN
+0398 C                     END                              E1
+0399 CSR                   ENDSR
+0400 C* * * * * * * * * * * * * * * * * * * * *
+0401 CSR         L1TOT     BEGSR                                                L 1 T O T
+0402 C*
+0403 C                     ADD  L1PAMT    L2PAMT 112
+0403 C                     ADD  L1FAMT    L2FAMT  72
+0403 C                     ADD  L1AMT     L2AMT  112
+0404 C                     ADD  L1DISC    L2DISC 112
+0405 C                     ADD  L1RTAM    L2AMT
+0406 C                     ADD  L1RTDS    L2DISC
+0407 C*
+0408 C           COVEND    CHAINAPVEND               95
+0409 C  N95                DO                               B1
+0410 C                     ADD  L1AMT     VN$YTD
+0411 C                     ADD  L1AMT     VNPURC
+0412 C                     ADD  L1AMT     VNCBAL
+0413 C                     ADD  L1RTAM    VN$YTD
+0414 C                     ADD  L1RTAM    VNPURC
+0415 C                     ADD  L1RTAM    VNCBAL
+0416 C                     END                              E1
+0417 C*
+0418 C           ATVEND    IFNE *ZEROS                      B1
+0419 C           INVHKY    CHAINAPINVH               80
+0420 C      80             EXCPTADDINV
+0421 C                     END                              E1
+0422 C*
+0423 CSR                   ENDSR
+0424 C* * * * * * * * * * * * * * * * * * * * *
+0425 CSR         INTRCO    BEGSR                                                I N T R C O
+0426 C*
+0427 C* INTER COMPANY TRANSFERS
+0428 C*
+0429 C                     MOVELATCONO    IDRCO   20
+0430 C                     Z-ADDACICGL    IDRGL   80
+0431 C                     Z-ADDATAMT     IDRAMT 112
+0432 C*
+0433 C                     MOVELATEXCO    ICRCO   20
+0434 C                     Z-ADDACICGL    ICRGL   80
+0435 C                     Z-ADDATAMT     ICRAMT 112
+0436 C*
+0437 C* IF NOT 100 PCT RETENTION, OUTPUT VOUCHER
+0438 C*
+0439 C     N27             EXCPT
+0440 C                     SETOF                     29
+0441 C*
+0442 C* OUTPUT RETENTION VOUCHER
+0443 C*
+0444 C           ATRTAM    IFNE *ZEROS                      B1
+0445 C                     Z-ADDATRTAM    IDRAMT
+0446 C                     Z-ADDATRTAM    ICRAMT
+0447 C                     SETON                         29
+0448 C                     EXCPT
+0449 C                     SETOF                         29
+0450 C                     END                              E1
+0451 C*
+0452 CSR                   ENDSR
+0453 C* * * * * * * * * * * * * * * * * * * * *
+0455 OAPPJJR  EADD     29
+0456 O                                    1 'A'
+0457 O                         IDRCO      3
+0458 O                         JRNID      7
+0459 O                                   12 'D'
+0460 O                         IDRGL     20
+0461 O                         ATDDES    45
+0465 O                         JRDATE    56
+0466 O                         IDRAMT    62P
+0467 O                         ATVNAM    92
+0468 O                                  115 'INTER-CO  '
+0469 O                         ATEXCO   115
+0471 OAPPJJR  EADD     29
+0472 O                                    1 'A'
+0473 O                         ICRCO      3
+0474 O                         JRNID      7
+0475 O                                   12 'C'
+0476 O                         ICRGL     20
+0477 O                         ATDDES    45
+0481 O                         JRDATE    56
+0482 O                         ICRAMT    62P
+0483 O                         ATVNAM    92
+0484 O                                  115 'INTER-CO  '
+0485 O                         ATCONO   115
+0487 OAPPJJR  DADD     02 10N27
+0488 O                                    1 'A'
+0489 O                         ATEXCO     3
+0490 O                         JRNID      7
+0491 O                                   12 'D'
+0492 O                         ATEXGL    20
+0493 O                         ATDDES    45
+0497 O                         JRDATE    56
+0498 O                         ATAMT     62P
+0499 O                         ATVNAM    92
+0500 O                                  115 'EXPENSE   '
+0501 O                         ATGALN   137P
+0502 O                         ATRCPT   144
+0504 OAPPJJR  TADD     L1 10N27
+0505 O                                    1 'A'
+0506 O                         ATCONO     3
+0507 O                         JRNID      7
+0508 O                                   12 'C'
+0509 O                         ATAPGL    20
+0510 O                         ATIN10    30
+0511 O                         ATINDT    38
+0512 O                                   40 ' '
+0513 O                         ATVN10    50
+0514 O                         JRDATE    56
+0515 O                         L1AMT     62P
+0516 O                         ATVNAM    92
+0517 O                                  115 'AP        '
+0519 OAPPJJR  DADD     02 10 26
+0520 O                                    1 'A'
+0521 O                         ATEXCO     3
+0522 O                         JRNID      7
+0523 O                                   12 'D'
+0524 O                         ATEXGL    20
+0525 O                         ATDDES    45
+0529 O                         JRDATE    56
+0530 O                         ATRTAM    62P
+0531 O                         ATVNAM    92
+0532 O                                  115 'EXPENSE   '
+0533 O                         ATGALN   137P
+0534 O                         ATRCPT   144
+0536 OAPPJJR  TADD     L1 10 26
+0537 O                                    1 'A'
+0538 O                         ATCONO     3
+0539 O                         JRNID      7
+0540 O                                   12 'C'
+0541 O                         ATRTGL    20
+0542 O                         ATIN10    30
+0543 O                         ATINDT    38
+0544 O                                   40 ' '
+0545 O                         ATVN10    50
+0546 O                         JRDATE    56
+0547 O                         L1RTAM    62P
+0548 O                         ATVNAM    92
+0549 O                                  115 'AP        '
+0551 OAPCONT  E                UPDCO
+0552 O                         ACJRNL    67
+0553 O                         NXTVO     85
+0555 OAPOPENH E                UPCNCH                                           CANCEL VOUCHER
+0556 O                                    1 'D'
+0557 OAPOPEND E                UPCNCD                                           CANCEL VOUCHER
+0558 O                                    1 'D'
+0559 OAPOPENV E                UPCNCV                                           CANCEL VOUCHER
+0560 O                                    1 'D'
+0562 OAPHISTH EADD             ADDHIH                                           CANCEL VOUCHER
+0116 O                         OPDAT3   253
+0116 O                         OPDAT4   261
+0116 O                         OPDAT5   297
+0116 O                         OPDAT6   384
+0565 O                         OPKY1    199
+0566 O                         Z6       205
+0567 O                         OPKY2    214
+0568 O                                  215 'C'
+0569 O                         PJYMD    221
+0570 O                         Z6        96
+0571 O                         PJYMD    111
+0572 O                         PJYMD8   253
+0573 O                         PJYMD8   269
+     O                         ATFRTL   273P
+     O                         Z5       278
+LT01 O                         ATSORN   294
+LT01 O                         ATSSRN   297
+MG05 O                         ATTERM   314
+     O                         ATCAID   320
+     O                         ATINV#   340
+0574 OAPHISTD EADD             ADDHID                                           CANCEL VOUCHER
+0575 O                         OPDATA   256
+0576 O                         OPDAT2   320
+0577 O                         OPKY1    199
+0578 O                         Z6       205
+0579 O                         OPKY2    214
+0580 O                                  215 'C'
+0581 O                         PJYMD    221
+0582 O                         PJYMD8   229
+JK01 O                         Z8       237
+0583 OAPHISTV EADD             ADDHIV                                           CANCEL VOUCHER
+0584 O                         OPDATA   256
+0585 O                         OPDAT2   320
+0586 O                         OPKY1    199
+0587 O                         Z6       205
+0588 O                         OPKY2    214
+0589 O                                  215 'C'
+0590 O                         PJYMD    221
+0591 O                         PJYMD8   229
+     O                         Z8       237
+0593 OAPOPENH TADD     L1 10N12                                                 NOT CNCL,NOT RTN
+0594 O       AND         N27
+0595 O                                    1 'A'
+0596 O                         ATCONO     3
+0597 O                         ATVEND     8
+0598 O                         VOUCHR    13
+0599 O                         ONE1      14
+0600 O                         ONE3      17
+0601 O                         L1AMT     23P
+0602 O                         L1DISC    28P
+0603 O                         Z11       34P
+0604 O                         ATIDES    59
+0605 O                         ATAPGL    67
+MG09 O                         ATDSDT    74
+0607 O                         ATINDT    84
+0608 O                         ATDUDT    90
+0609 O                         ATPPCK    96
+0610 O                         ATPAID    97
+0611 O                                   98 ' '
+0612 O                         Z6       104
+0613 O                         ONE1     105
+0614 O                         Z6       111
+0615 O                         PJYMD    117
+0616 O                         JRNID    121
+0617 O                         ATHOLD   126
+0618 O                         ATHLDD   151
+0619 O                         ATSNGL   152
+0620 O                         ATBKGL   160
+0621 O                         Z11      166P
+0622 O                         Z9       171P
+MG09 O                         ATDSD8   179
+0623 O                         Z5       192
+0624 O                         ATIND8   229
+0625 O                         ATDUD8   237
+0626 O                         Z8       245
+0627 O                         Z8       253
+0628 O                         PJYMD8   261
+     O                         ATFRTL   265P
+JB02 O                         Z5       270
+LT01 O                         ATSORN   286
+LT01 O                         ATSSRN   289
+MG05 O                         ATTERM   314
+     O                         ATCAID   320
+0606 O                         ATINV#   340
+0630 OAPOPEND DADD     02 10N12                                                 NOT CANCEL
+0631 O       AND         N27
+0632 O                                    1 'A'
+0633 O                         ATCONO     3
+0634 O                         ATVEND     8
+0635 O                         VOUCHR    13
+0636 O                         TWO1      14
+0637 O                         SEQ#      17
+0638 O                         ATAMT     23P
+0639 O                         ATDIS9    28P
+0640 O                         Z11       34P
+0641 O                         ATDDES    59
+0642 O                         ATEXGL    67
+0643 O                         ATEXCO    70
+0644 O                         Z6        76
+0645 O                         JRNID     80
+0646 O                         ATITEM    97
+0647 O                         ATQTY    108
+0648 O                         ATUNMS   110
+0649 O******                   ATPO#    117
+0650 O                         ATJOB#   123
+0651 O                         ATCCOD   131
+0652 O                         ATCTYP   133
+0653 O                         ATJQTY   137P
+0654 O******                   ATPONO   143
+0655 O                         ATGALN   147P
+0656 O                         ATRCPT   154
+0657 O                         ATCLCD   155
+0658 O                         ATPOSQ   158
+     O                         ATPRAM   164P
+     O                         ATFRAM   168P
+     O                         ATPONO   289
+0659 O                         Z8       245
+0661 OAPOPENV TADD     L1 03 10
+0662 O       AND      N27   N12
+0663 O                                    1 'A'
+0664 O                         ATCONO     3
+0665 O                         ATVEND     8
+0666 O                         VOUCHR    13
+0667 O                         THREE1    14
+0668 O                         ONE3      17
+0669 O                         ATVNAM    47
+0670 O                         ATVAD1    77
+0671 O                         ATVAD2   107
+0672 O                         ATVAD3   137
+0673 O                         ATVAD4   167
+0675 OAPOPENH TADD     L1 10N12                                                 RETENTION ONLY
+0676 O       AND          26
+0677 O                                    1 'A'
+0678 O                         ATCONO     3
+0679 O                         ATVEND     8
+0680 O                         RTVO      13
+0681 O                         ONE1      14
+0682 O                         ONE3      17
+0683 O                         L1RTAM    23P
+0684 O                         L1RTDS    28P
+0685 O                         Z11       34P
+0686 O                         ATIDES    59
+0687 O                         ATAPGL    67
+MG09 O                         ATDSDT    74
+0689 O                         ATINDT    84
+0690 O                         ATDUDT    90
+0691 O                         ATPPCK    96
+0692 O                         ATPAID    97
+0693 O                                   98 ' '
+0694 O                         Z6       104
+0695 O                         ONE1     105
+0696 O                         Z6       111
+0697 O                         PJYMD    117
+0698 O                         JRNID    121
+0699 O                         ATHOLD   126
+0700 O                         ATHLDD   151
+0701 O                         ATSNGL   152
+0702 O                         ATBKGL   160
+0703 O                         Z11      166P
+0704 O                         Z9       171P
+MG09 O                         ATDSD8   179
+0705 O                         Z5       192
+0706 O                                   68 'R'
+0707 O                                  126 'H'
+0708 O                                  150 'RETENTION'
+0709 O                         ATIND8   229
+0710 O                         ATDUD8   237
+0711 O                         Z8       245
+0712 O                         Z8       253
+0713 O                         PJYMD8   261
+     O                         ATFRTL   265P
+     O                         Z5       270
+LT01 O                         ATSORN   286
+LT01 O                         ATSSRN   289
+MG05 O                         ATTERM   314
+     O                         ATCAID   320
+0688 O                         ATINV#   340
+0715 OAPOPEND DADD     02 10N12                                                 NOT CANCEL
+0716 O       AND          26
+0717 O                                    1 'A'
+0718 O                         ATCONO     3
+0719 O                         ATVEND     8
+0720 O                         RTVO      13
+0721 O                         TWO1      14
+0722 O                         SEQ#      17
+0723 O                         L1RTAM    23P
+0724 O                         L1RTDS    28P
+0725 O                         Z11       34P
+0726 O                         ATDDES    59
+0727 O                         ATEXGL    67
+0728 O                         ATEXCO    70
+0729 O                         Z6        76
+0730 O                         JRNID     80
+0731 O                         ATITEM    97
+0732 O                         ATQTY    108
+0733 O                         ATUNMS   110
+0734 O****                     ATPO#    117
+0735 O                         ATJOB#   123
+0736 O                         ATCCOD   131
+0737 O                         ATCTYP   133
+0738 O                         ATJQTY   137P
+0739 O*****                    ATPONO   143
+0740 O                         ATGALN   147P
+0741 O                         ATRCPT   154
+0742 O                         ATCLCD   155
+0743 O                         ATPOSQ   158
+     O                         ATPRAM   164P
+     O                         ATFRAM   168P
+0744 O                         Z8       245
+     O                         ATPONO   289
+0746 OAPOPENV TADD     L1 03 10
+0747 O       AND       26   N12
+0748 O                                    1 'A'
+0749 O                         ATCONO     3
+0750 O                         ATVEND     8
+0751 O                         RTVO      13
+0752 O                         THREE1    14
+0753 O                         ONE3      17
+0754 O                         ATVNAM    47
+0755 O                         ATVAD1    77
+0756 O                         ATVAD2   107
+0757 O                         ATVAD3   137
+0758 O                         ATVAD4   167
+0760*O*CTRAN  EADD             ADDJC
+0761*O****                                1 'A'
+0762*O****                     JCSEQ      6
+0763*O****                     ATEXCO     8
+0764*O****                     ATJOB#    14
+0765*O****                     ATCCOD    22
+0766*O****                     ATCTYP    24
+0767*O****                     JRDATE    30
+0768*O****                     ATJQTY    34P
+0769*O****                     ATJCAM    40P
+0770*O****                     Z7        44P
+0771*O****                     Z11       50P
+0772*O****                     Z5        55
+0773*O****                     DESC20    75
+0774*O****                     JRNID     79
+0775*O****                     Z4        83
+0776*O****                     Z10       93
+0777*O****                     Z10      103
+0779 OAPVEND  T        L1 10N95
+0780 O                         VN$YTD   200P
+0781 O                         VNPURC   229P
+0782 O                         VNCBAL   239P
+0784 OAPINVH  EADD             ADDINV
+0785 O                                    1 'A'
+0786 O                         INVHKY    33
+0787 O                         L1AMT     39P
+0788 O                         INDT      45
+0789 O                         ATIND8    53
+0791 OPOFILEH E                POUPD
+0792 O                         POAPPU    96P
+0793 OPOFILED E                PDUPD
+0794 O                         PDRCQT   115
+0795 O                         PDAPV$   174P
+0796 O                         PDRCDT   121
+0797 O                         PDCOMP   122
+0799 OAPPYTR  EADD        78   UPPYTR
+0800 O                                    1 'A'
+0801 O                         PTSEQ#     6
+0802 O                         ATCONO     8
+0803 O                         ATBKGL    16
+0804 O                                   35 ' '
+0805 O                         ATVEND    40
+0806 O                         VOUCHR    45
+0807 O                         Z11       51P
+0808 O                         Z9        56P
+0809 O                         ATPAID    59
+0810 O                         ATPPCK    65
+0811 O                         ATPCKD    71
+0812 O                         ATPCK8    79
+0814 OAPPYTR  E          N78   UPPYTR
+0815 O                                   35 'D'
+JK02 OFRCINH  E                APINST
+JK02 O                                  106 ' '
+JB08 OFRCFBH  E                APFBST
+JB08 O                                  106 ' '
+0817 OAPPRINT D  103   L2
+0818 O       OR        OFNL2
+0819 O                N92      ACNAME    30
+0820 O                                  134 'PAGE'
+0821 O                         PAGE  Z  138
+0822 O                                  150 'DATE'
+0823 O                         SYSDATY  159
+0824 O        D  1     L2
+0825 O       OR        OFNL2
+0826 O                                    6 'AP200 '
+0827 O                         WIREDS    47
+0828 O                                   74 'PURCHASE REGISTER'
+0829 O                                  150 'TIME'
+0830 O                         SYSTIM   159 '  :  :  '
+0831 O        D  2     L2
+0832 O       OR        OFNL2
+0828 O                                   24 'PURCHASE REGISTER       '
+     O                         SYSDT8    32
+     O                         SYSTIM    38
+     O                         JRNID     43
+0833 O                         WORKST    46
+0833 O                         JRDATEY   69
+0834 O        D  1     L2
+0835 O       OR        OFNL2
+0836 O                         SEP      164
+0213 O        D  1     L2
+0214 O       OR        OFNL2
+0217 O                                   89 'PRODUCT'
+0216 O                                  103 'FREIGHT'
+0218 O                                  115 'LINE'
+0837 O        D  1     L2
+0838 O       OR        OFNL2
+0839 O                                    5 'VOUCH'
+0840 O                                    9 '--'
+0841 O                                   27 'VENDOR'
+0842 O                                   41 '--'
+0843 O                                   55 'INVOICE#/DESC'
+0844 O                                   88 'AMOUNT'
+     O                                  102 'AMOUNT'
+     O                                  116 'AMOUNT'
+0219 O                                  130 'DISCOUNT'
+0220 O                                  150 'G/L NO '
+0847 O        D  2     L2
+0848 O       OR        OFNL2
+0849 O                         SEP      164
+0850 O        D  1     01 10
+0851 O                         VOUCHRZ    5
+0852 O                         ATVENDZ   12
+0853 O                         ATVNAM    43
+0854 O                         ATINV#    64
+0855 O                                   72 'INV'
+0856 O                         ATINDTY   81
+0857 O                                  137 'A/P'
+0858 O                         ATAPGL   150 '0      -  '
+0859 O                         ATCONO   140
+0860 O                                  141 '-'
+0861 O                       13         154 'PPD'
+0862 O                       13ATPPCKZ  162
+JB03 O                       24         157 'PPDACH'
+JB03 O                       24ATPPCKZ  164
+JB03 O                       25         157 'PPDWT '
+JB03 O                       25ATPPCKZ  164
+MG01 O                       32         157 'PPDEE '
+MG01 O                       32ATPPCKZ  164
+0863 O        D  1     01 10
+JK02 O                                    4 'P/T:'
+JK02 O                         ATPTYP    10
+JB04 O                       19          23 'SALES ORD'
+JB04 O                       19ATSORNZ   30
+JB04 O                       19ATSSRNZ   34
+JB04 O                         ATCAID    43
+0864 O                         ATIDES    68
+0865 O                                   72 'DUE'
+0866 O                         ATDUDTY   81
+0865 O                                   95 'DISCOUNT'
+0866 O                         ATDSDTY  104
+0867 O                                  137 'BANK'
+0868 O                         ATBKGL   150 '0      -  '
+0869 O                         ATCONO   140
+0870 O                                  141 '-'
+0871 O                       14         162 'SINGLE CHK '
+0872 O        D  1     01 10 12
+0873 O                                  126 'CANCELED VOUCHER'
+0874 O                         ATCNVOZ  132
+0875 O        D  1     01 10 17
+JB03 O                                  100 'HOLD DESC:'
+0877 O                         ATHLDD   126
+0878 O        D  1     02 10
+0879 O                    18              6 'JOB #'
+0880 O                    18             18 'COST CD  TY'
+0881 O                    18             28 'QUANTITY'
+0882 O                    45             36 'P/O NO-SEQ'
+     O                                    2 'PO'
+0877 O                         ATPONO    33
+0883 O                         ATDDES    68
+0266 O                         ATPRAMM   89
+0266 O                         ATFRAMM  103
+0884 O                         ATAMT M  117
+0885 O                         ATDISCM  130
+0886 O                                  137 'EXP'
+0887 O                         ATEXGL   150 '0      -  '
+0888 O                         ATEXCO   140
+0889 O                                  141 '-'
+0890 O        D  1     02 10 18
+0891 O       OR        02 10 45
+0892 O                    18   ATJOB#     6
+0893 O                    18   ATCCOD    14
+0894 O                    18   ATCTYP    18
+0895 O                    18   ATJQTYK   29
+0896 O*******             45   ATPONOZ   32
+0897 O                    45             33 '-'
+0898 O                    45   ATENSQ    36
+0899 O                    45   ATITEM    56
+0900 O                    45   ATCLCD    58
+0901 O        D  1     02 60
+0902 O                                    7 'GALLONS'
+0903 O                         ATGALN4   18
+0904 O                                   30 'RECEIPT#'
+0905 O                         ATRCPTZ   38
+0906 O        T  1     L1
+0907 O                                   60 '*** VOUCHER TOTALS ***'
+0908 O                         L1AMT M   89
+0909 O                         L1DISCM  130
+0910 O        T        L1 26
+0911 O                         RTVO  Z    5
+0912 O                                   60 '*** RETENTION TOTALS ***'
+0913 O                         L1RTAMM   89
+0914 O                         L1RTDSM  130
+0915 O                         ATRTGL   120 '0      -  '
+0916 O                         ATCONO   110
+0917 O                                  111 '-'
+0918 O        T  2     L1
+0919 O                         SEP      164
+0920 O        T 31     L2
+0921 O                                   60 '*** COMPANY TOTALS ***'
+0922 O                         L2PAMTM   89
+0922 O                         L2FAMTM  103
+0923 O                         L2DISCM  130
+0922 O                         L2AMT M  117

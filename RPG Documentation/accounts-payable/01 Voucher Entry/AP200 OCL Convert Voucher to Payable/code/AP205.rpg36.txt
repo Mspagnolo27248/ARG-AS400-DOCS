@@ -1,0 +1,199 @@
+0002 H    P064                      B                                     AP205
+0006 F*
+0007 F* PURCHASE JOURNAL, SUMMARIZE A/P
+0008 FAPPJJR  IP    144 144R  I        DISK
+0009 FAP205S  IR      3   3  3IT      EDISK
+0010 FAPCONT  IC    256 256R 2AI     2 DISK
+0011 FTEMGEN  O     128 128            DISK                      A
+0012 FAPPRINT O     132 132     OF     PRINTER
+0013 E    AP205S  APPJJR
+0014 E                    SEP        66  2
+0016 IAPPJJR  NS  01
+0017 I                                        1   1 PJDEL                 D-DELETE
+0018 I                                        2   30PJCONOL4              COMPANY
+0019 I                                        4   7 PJJRNL                PJ JRNL #
+0020 I                                       12  12 PJCORDL3              C,D-CREDIT,DEBIT
+0021 I                                       13  200PJGLNOL1              G/L #
+0024 I                                       21  50 PJDES1
+0025 I                                       51  560PJDATE                PURCHASE JOURNAL DATE
+0026 I                                    P  57  622PJAMT                 AMOUNT
+0027 I                                       63  92 PJDES2
+0028 I                                       63  72 PJVN10
+0029 I                                      106 115 PJTYPEL2              AP,EXPENSE,INTER-CO
+0030 I                                    P 134 1370PJGALN
+0031 I                                      138 1440PJRCPT
+0032 IAPCONT  NS
+0033 I                                        4  33 ACNAME                COMPANY NAME
+0034 I           UDS
+0035 I                                       96  990KYYYPD                YEAR/PERIOD (13)
+0036 I                                       96  970KYPDYY
+0037 I                                       98  990KYPD
+0038 I                                      100 1050JRDATE
+0039 I                                      200 220 WIREDS
+0040 I                                      509 5100Y2KCEN                 19
+0041 I                                      511 5120Y2KCMP                 80
+0042 C*****
+0043 C**   TEST IF PERIOD/YEAR <> 0
+0044 C  N99      KYYYPD    COMP 0                    9898
+0045 C  N99                SETON                     99
+0046 C**
+0047 C                     SETOF                     60
+0048 C*
+0049 C   L4                TIME           TIMDAT 120
+0050 C   L4                MOVELTIMDAT    TIME    60
+0051 C   L4                MOVE TIMDAT    DATE    60
+0208 C   L4      DATE      MULT 10000.01  SYSYMD  60
+0208 C   L4                MOVEL20        SYSDT8  80
+0208 C   L4                MOVE SYSYMD    SYSDT8
+0052 C   L4                Z-ADD0         PAGE
+0053 C   L4                MOVE '* '      SEP
+0054 C   L4      PJCONO    CHAINAPCONT               94
+0055 C   L4                Z-ADD0         L4DR   132
+0056 C   L4                Z-ADD0         L4CR   132
+0057 C*
+0058 C   L3      PJCORD    COMP 'D'                      30DEBIT
+0059 C*
+0060 C   L2      PJTYPE    COMP 'AP      '               20SUMMARIZE A/P ONLY
+0061 C*
+0062 C   L1                Z-ADD0         L1AMT  112
+0063 C*
+0064 C                     ADD  PJAMT     L1AMT
+0065 C           PJDATE    MULT 10000.01  YMD     60
+0066 C                     MOVELYMD       YY      20
+0067 C           YY        IFGE Y2KCMP                     B1
+0068 C                     Z-ADDY2KCEN    CN      20       CENTURY
+0069 C                     ELSE                            X1
+0070 C           1         ADD  Y2KCEN    CN
+0071 C                     END                             E1
+0072 C                     MOVELCN        CYMD    80
+0073 C                     MOVE YMD       CYMD
+0074 C*
+0075 C* NOT SUMMARIZED - WRITE JOURNAL ENTRY
+0076 C  N20                EXSR JRNL
+0077 C*
+0078 C* SUMMARIZED - WRITE JOURNAL ENTRY
+0079 CL1 20                EXSR JRNL
+0080 C******************************************
+0082 CSR         JRNL      BEGSR                                                JRNL
+0083 C                     ADD  1         JRREF#  40
+0084 C*
+0085 C                     MOVELPJCORD    CORD    1
+0086 C           L1AMT     COMP 0                      10  NEGATIVE,SWITCH SIGN,AND CORD
+0087 C   10                Z-SUBL1AMT     L1AMT
+0088 C   10 30             MOVEL'C'       CORD
+0089 C   10N30             MOVEL'D'       CORD
+0090 C*
+0091 C           CORD      COMP 'D'                      11DEBIT
+0092 C         11          ADD  L1AMT     L4DR
+0093 C        N11          ADD  L1AMT     L4CR
+0094 C                     Z-ADDL1AMT     JRAMT  112
+0095 C                     Z-ADD0         L1AMT
+0096 C*
+0097 C* PRINT "GALLONS" & "RECEIPT#"
+0098 C           PJGALN    COMP *ZEROS               6060
+0099 C*
+0100 CSR                   ENDSR
+0102 C******************************************
+0103 OTEMGEN  DADD     01N20
+0104 O                                    1 'A'
+0105 O                         PJCONO     3
+0106 O                         PJGLNO    11
+0107 O                         PJJRNL    15
+0108 O                         JRREF#    19
+0109 O                         CORD      20
+0112 O                         PJDES1    50
+0113 O                 60      PJVN10    50
+0114 O                         YMD       56
+0115 O                         JRAMT     62P
+0116 O                N60      PJDES2    92
+0117 O                 60                66 'GALN'
+0118 O                 60      PJGALNK   77
+0119 O                 60                84 'RCPT'
+0120 O                 60      PJRCPTZ   92
+0121 O                         CYMD     100
+0122 OTEMGEN  TADD     L1 20
+0123 O* SUMMARIZED ENTRY
+0124 O                                    1 'A'
+0125 O                         PJCONO     3
+0126 O                         PJGLNO    11
+0127 O                         PJJRNL    15
+0128 O                         JRREF#    19
+0129 O                         CORD      20
+0130 O                         PJDATE    26
+0131 O                                   50 '-SUMMARIZED A/P         '
+0132 O                         YMD       56
+0133 O                         JRAMT     62P
+0134 O*                                  92
+0135 O                         CYMD     100
+0137 O*************************************
+0138 OAPPRINT D  103   L4
+0139 O       OR        OFNL4
+0140 O                         ACNAME    30
+0141 O                                  104 'PAGE'
+0142 O                         PAGE  Z  108
+0143 O                                  120 'DATE'
+0144 O                         DATE  Y  129
+0145 O        D  1     L4
+0146 O       OR        OFNL4
+0147 O                         WIREDS    47
+0148 O                                   74 'PURCHASE JOURNAL'
+0149 O                                  120 'TIME'
+0150 O                         TIME     129 '  .  .  '
+0151 O        D  2     L4
+0152 O       OR        OFNL4
+0828 O                                   24 'PURCHASE JOURNAL        '
+     O                         SYSDT8    32
+     O                         TIME      38
+     O                         PJJRNL    43
+0153 O                         JRDATEY   69
+0154 O                       98          85 'PERIOD XX-XX'
+0155 O                       98KYPD      82
+0156 O                       98KYPDYY    85
+0157 O        D  1     L4
+0158 O       OR        OFNL4
+0159 O                         SEP      132
+0160 O        D  1     L4
+0161 O       OR        OFNL4
+0162 O                                   11 'JOURNAL'
+0163 O                                  101 '---------DEBIT----------'
+0164 O                                  132 '---------CREDIT---------'
+0165 O        D  1     L4
+0166 O       OR        OFNL4
+0167 O                                   12 'REFERENCE'
+0168 O                                   30 'DESCRIPTION'
+0169 O                                   45 'VENDOR NAME'
+0170 O                                  100 'G/L NO          AMOUNT'
+0171 O                                  131 'G/L NO          AMOUNT'
+0172 O        D  2     L4
+0173 O       OR        OFNL4
+0174 O                         SEP      132
+0175 O        D  1     01N20
+0176 O                         PJJRNL     6
+0177 O                                    7 '-'
+0178 O                         JRREF#    11
+0180 O                         PJDES1    44
+0181 O                         PJVN10    45
+0182 O                 11      PJGLNO    84 '      -  '
+0183 O                 11      JRAMT J  101
+0184 O                N11      PJGLNO   115 '      -  '
+0185 O                N11      JRAMT J  132
+0187 O        D  1     01 60
+0188 O                                   21 'GALLONS'
+0189 O                         PJGALNM   30
+0190 O                                   41 'RECEIPT#'
+0191 O                         PJRCPTZ   49
+0192 O        T  1     L1 20
+0193 O* SUMMARIZED ENTRY
+0194 O                         PJJRNL     6
+0195 O                                    7 '-'
+0196 O                         JRREF#    11
+0197 O                         PJDATEY   22
+0198 O                                   45 '-SUMMARIZED A/P       '
+0199 O                 11      PJGLNO    84 '      -  '
+0200 O                 11      JRAMT J  101
+0201 O                N11      PJGLNO   115 '      -  '
+0202 O                N11      JRAMT J  132
+0203 O        T 2      L4
+0204 O                                   79 'JOURNAL TOTALS'
+0205 O                         L4DR  JB 101
+0206 O                         L4CR  JB 132

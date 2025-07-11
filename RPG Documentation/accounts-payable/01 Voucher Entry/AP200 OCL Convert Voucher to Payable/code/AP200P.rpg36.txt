@@ -1,0 +1,516 @@
+0002 H    P064                      B                                     AP200P
+0006 F*
+0007 F* PROMPTS FOR PURCHASE REGISTER & JOURNAL
+0008 F* ADDED PERIOD/YEAR FOR PJ/CD IF 13 ACCOUNTING PERIODS
+     F*
+JB01 F* JB01   050113  JAN BECCARI - FREEDOM RESOURCES - 724.693.2582
+JB01 F* ACH REVISION - ALLOW A (ACH) OR W (WIRE TRANSFER) PAYMENT CYCLE
+     F*
+0009 FSCREEN  CP  F     512            WORKSTN
+0010 FAPTRAN  ID  F 404 404L10AI     2 DISK
+0011 FGSCONT  IC  F 512 512R 2AI     2 DISK
+0009 FGLCONT  IF  F 256 256  2AI     2 DISK
+0012 FGSTABL  IC  F 256 256R12AI     2 DISK
+0013 FAPPYTR  O   F 128 128  5AI     2 DISK                      A
+0014 E                    MSG     1   7 30
+0015 E                    HED     1   4 42
+0017 ISCREEN  NS  01   1 CS   2 C1
+0018 I                                        3   80PJDATE
+0019 I                                        9  140CDDATE
+0020 I                                       15  160KYPD
+0021 I                                       17  180KYPDYY
+0022 I                                       19  200CDPD
+0023 I                                       21  220CDPDYY
+0024 ISCREEN  NS  02   1 CS   2 C2
+0025 I                                        3   3 YORN
+0026 I        NS  09
+0027 IAPTRAN  NS  07   9 C0  10 C0  11 C0
+0028 I       AND       1NCD
+0029 I                                      106 106 ATPAID                P=PREPAID
+0030 I        NS  08
+0031 I*---
+0032 IGSCONT  NS  05   2 C0   3 C0
+0033 I                                       51  51 GX13GL                13 ACCTG PDS Y/N
+0034 IGSTABL  NS
+0035 I* G/L   DATEXX
+0036 I                                       14  190TBPDDT                PERIOD END DATE
+0010 IGLCONT  NS
+0011 I                                        1   1 GCDEL                 D - DELETE
+0012 I                                        2   30GCCO                  COMPANY NO.
+0013 I                                        4  33 GCNAME                COMPANY NAME
+0014 I                                       34  63 GCADR1                COMPANY ADDR 1
+0015 I                                       64  93 GCADR2                COMPANY ADDR 2
+0016 I                                       94 123 GCADR3                COMPANY ADDR 3
+0017 I                                      124 1250GCFFMO                FIRST FISCAL MTH
+0018 I                                      126 133 GCSEC                 SECURITY CODE
+0019 I                                      134 1350GCNXGJ                NXT GENERAL JRNL
+0020 I                                      136 1430GCICGL                INTERCOMPANY G/L
+0021 I                                      144 1450GCLSYR                LST FSC YR CLOSD
+0022 I                                      146 1530GCRETC                RET EARN CURRNT YR GL#
+0023 I                                      154 1610GCYTDP                YTD PROFIT GL#
+0024 I                                      162 1690GCRETP                RET EARN PRIOR YRS GL#
+0025 I                                      170 1720GCINLN                TOTL INCOME LINE
+0026 I                                      173 175 GCCONS                CONS. COMPANY CODE
+0027 I                                      176 1770GCCOLM                CONS. COLUMN #
+0028 I                                      178 1850GCBSGL                BS ROUNDING $S G/L #
+0029 I                                      186 1930GCISGL                IS ROUNDING $S G/L #
+0030 I                                      194 194 GCMINV                MO INV CST BY CO OR LO
+0030 I                                      195 1980GCLSY4                LST FSC YR CLOSD-CY
+     I                                      199 2040GCLMCC                LAST MNTH CLOSED FOR COSTING
+     I                                      205 207 GCCOUM                COSTING U/M'
+0037 I            DS
+0038 I                                        1   60DATE
+0039 I                                        1   20MM
+0040 I                                        3   40DD
+0041 I                                        5   60YY
+0042 I*---
+0043 I           UDS
+0044 I                                       92  930CDPDYY
+0045 I                                       94  950CDPD
+0046 I                                       96  970KYPDYY
+0047 I                                       98  990KYPD
+0048 I                                      100 1050JRDATE
+0049 I                                      129 134 CANCEL
+0050 I                                      509 5100Y2KCEN                 19
+0051 I                                      511 5120Y2KCMP                 80
+0052 C*****
+0053 C                     SETOF                     8190
+0054 C                     MOVEL*BLANKS   MSG30  30
+0055 C*
+0056 C   KG                MOVE 'CANCEL'  CANCEL
+0057 C   KG                SETON                     LR
+0058 C   KG                SETOF                     81
+0059 C   KG                GOTO END
+0060 C*
+0061 C   09                EXSR ONETIM
+0062 C*
+0063 C   01                EXSR S1
+0064 C   02                EXSR S2
+0065 C*
+0066 C           END       TAG
+0067 C******************************************
+0068 C************ * * * * * * * * * * * * * * *
+0069 CSR         ONETIM    BEGSR                                                ONETIM
+     C                     Z-ADD*ZERO     Z5      50
+     C                     Z-ADD*ZERO     Z2      20
+     C                     Z-ADD*ZERO     Z8      80
+     C                     Z-ADD*ZERO     Z6      60
+0070 C                     SETON                     81
+0072 C*
+0073 C* FIND OUT IF PREPAID CHECKS EXIST,
+0074 C*    IF THEY DO, ALLOW INPUT OF CASH DISBURSEMENTS
+0075 C*    JOURNAL DATE.
+0076 C                     MOVEL*BLANKS   ATLIM  10
+0077 C           ATLIM     SETLLAPTRAN
+0078 C           AGNONE    TAG
+0079 C                     SETOF                     070809
+0080 C                     READ APTRAN                   09
+0081 C         08          GOTO AGNONE
+0082 C         09          GOTO ENDONE
+0083 C           ATPAID    COMP 'P'                      21PREPAIDS EXIST
+JB01 C        N21ATPAID    COMP 'A'                      21PPD ACH  EXIST
+JB01 C        N21ATPAID    COMP 'W'                      21PPD WIRE EXIST
+JB01 C        N21ATPAID    COMP 'E'                      21PPD EMPL EXIST
+JB01 C*
+JB01 C           ATPAID    COMP 'P'                      22PREPAIDS EXIST
+JB01 C           ATPAID    COMP 'A'                      23PPD ACH  EXIST
+JB01 C           ATPAID    COMP 'W'                      24PPD WIRE EXIST
+JB01 C           ATPAID    COMP 'E'                      25PPD EMPL EXIST
+0084 C        N21          GOTO AGNONE
+0085 C           ENDONE    TAG
+0086 C        N21          SETON                     20    NO PREPAIDS EXIST
+0087 C*
+0088 C** CONDITION PROMPT FOR PERIOD/YR IF 13 ACCOUNTING PERIODS
+0089 C           '00'      CHAINGSCONT               17
+0090 C  N17      GX13GL    COMP 'Y'                  171716
+0091 C   17                SETON                     19
+0092 C   16 20             SETON                     19
+0093 C   16N20             SETON                     18
+0094 CSR                   ENDSR
+0095 C************ * * * * * * * * * * * * * * *
+0096 CSR         S1        BEGSR                                                S1
+0097 C*--- EDIT PURCHASE JOURNAL DATE
+0098 C                     SETOF                     905051
+0099 C                     Z-ADDPJDATE    DATE
+0100 C                     EXSR DATCHK
+0101 C         79          SETON                     8190
+0102 C         79          GOTO ENDS1
+0103 C           PJDATE    MULT 10000.01  PJYMD   60
+0104 C                     MOVELPJYMD     PJYR    20
+0105 C           PJYR      IFGE Y2KCMP                     B1                  B1
+0106 C                     Z-ADDY2KCEN    PJCN    20       CENTURY
+0107 C                     ELSE                            X1                  X1
+0108 C           1         ADD  Y2KCEN    PJCN
+0109 C                     END                             E1                  E1
+0110 C                     MOVELPJCN      PJYMD8  80
+0111 C                     MOVE PJYMD     PJYMD8
+0112 C*--- IF PREPAIDS EXIST, EDIT CASH DISBURSMENTS DATE
+0113 C   21                SETOF                     90
+0114 C   21                Z-ADDCDDATE    DATE
+0115 C   21                EXSR DATCHK
+0116 C   21    79          SETON                     8190
+0117 C   21    79          GOTO ENDS1
+0118 C           CDDATE    MULT 10000.01  CDYMD   60
+0119 C                     MOVELCDYMD     CYY     20
+0120 C           CYY       IFGE Y2KCMP                     B1                  B1
+0121 C                     Z-ADDY2KCEN    CN      20       CENTURY
+0122 C                     ELSE                            X1                  X1
+0123 C           1         ADD  Y2KCEN    CN
+0124 C                     END                             E1                  E1
+0125 C                     MOVELCN        CDDAT8  80
+0126 C                     MOVE CDYMD     CDDAT8
+0127 C*---
+0128 C* EDIT PERIOD,YEAR FOR PURCHASE JOURNAL IF 13 ACCTG PERIODS
+0129 C   16                DO                                                   B1
+0130 C           KYPD      COMP 01                     11
+0131 C  N11      KYPD      COMP 13                   11
+0132 C   11                SETON                     819050
+0133 C   11                MOVELMSG,5     MSG30
+0134 C   11                GOTO ENDS1
+0135 C*
+0136 C* GET PERIOD END DATE
+0137 C                     MOVEL'DATE'    WORK6   6
+0138 C                     MOVE KYPDYY    WORK6
+0139 C                     MOVEL*BLANKS   GSTBKY 12
+0140 C                     MOVELWORK6     GSTBKY
+0141 C                     MOVE KYPD      GSTBKY
+0142 C           GSTBKY    CHAINGSTABL               10
+0143 C   10                SETON                     819050
+0144 C   10                MOVELMSG,5     MSG30
+0145 C   10                GOTO ENDS1
+0146 C** TEST HI DATE
+0147 C           TBPDDT    MULT 10000.01  HIDATE  60
+0148 C                     MOVELHIDATE    HIYR    20
+0149 C           HIYR      IFGE Y2KCMP                                         B2
+0150 C                     Z-ADDY2KCEN    HICN    20       CENTURY
+0151 C                     ELSE                                                X2
+0152 C           1         ADD  Y2KCEN    HICN
+0153 C                     END                                                 E2
+0154 C                     MOVELHICN      HIDAT8  80
+0155 C                     MOVE HIDATE    HIDAT8
+0156 C                     Z-ADDPJYMD     KYYMD   60
+0157 C                     Z-ADDPJYMD8    KYYMD8  80
+0158 C           KYYMD8    COMP HIDAT8               10
+0159 C   10                SETON                     819050
+0160 C   10                MOVELMSG,6     MSG30
+0161 C   10                GOTO ENDS1
+0162 C*
+0163 C** TEST LO DATE  (DETERMINE KEY)
+0164 C           KYPD      IFEQ 1                                               B2
+0165 C                     Z-ADD13        PDKEY   20
+0166 C           KYPDYY    SUB  1         YRKEY   20
+0167 C                     ELSE                                                 X2
+0168 C           KYPD      SUB  1         PDKEY
+0169 C                     Z-ADDKYPDYY    YRKEY
+0170 C                     END                                                  E2
+0171 C                     MOVEL'DATE'    WORK6
+0172 C                     MOVE YRKEY     WORK6
+0173 C                     MOVEL*BLANKS   GSTBKY
+0174 C                     MOVELWORK6     GSTBKY
+0175 C                     MOVE PDKEY     GSTBKY
+0176 C           GSTBKY    CHAINGSTABL               10
+0177 C   10                SETON                     819050
+0178 C   10                MOVELMSG,5     MSG30
+0179 C   10                GOTO ENDS1
+0180 C           TBPDDT    MULT 10000.01  LODATE  60
+0181 C                     MOVELLODATE    LOYR    20
+0182 C           LOYR      IFGE Y2KCMP                                          B2
+0183 C                     Z-ADDY2KCEN    LOCN    20
+0184 C                     ELSE                                                 X2
+0185 C           1         ADD  Y2KCEN    LOCN
+0186 C                     END                                                  E2
+0187 C                     MOVELLOCN      LODAT8  80
+0188 C                     MOVE LODATE    LODAT8
+0189 C           KYYMD8    COMP LODAT8                 1010
+0190 C   10                SETON                     819050
+0191 C   10                MOVELMSG,6     MSG30
+0192 C   10                GOTO ENDS1
+0193 C*
+0194 C                     END                                                  E1
+     C**
+     C* CHECK FOR PJDATE OUTSIDE OF CURRENT FISCAL YEAR
+     C                     DO                                                   B1
+     C           10        CHAINGLCONT               99
+     C   99                Z-ADD*ZEROS    MM
+     C   99                Z-ADD*ZEROS    YY
+     C   99                Z-ADD*ZEROS    CMPDAT
+     C   99                Z-ADD*ZEROS    LSMOFY
+     C   99                Z-ADD*ZEROS    YRMMCL
+     C  N99                DO
+     C                     MOVELPJDATE    MM      20
+     C                     MOVE PJDATE    YY      20
+     C                     MOVELYY        CMPDAT  40
+     C                     MOVE MM        CMPDAT
+     C                     MOVELGCLSYR    YRMMCL  40
+     C           GCFFMO    SUB  1         LSMOFY  20
+     C                     MOVE LSMOFY    YRMMCL
+     C           CMPDAT    IFLE YRMMCL
+     C                     SETON                     819051
+     C                     SETON                     11
+     C                     MOVELMSG,7     MSG30
+     C                     GOTO ENDS1
+     C                     END
+     C                     END
+     C                     END
+0203 C*
+0196 C* EDIT PERIOD,YEAR FOR CASH DISBURSMENTS JOURNAL
+0197 C   18                DO                                                   B1
+0198 C           CDPD      COMP 01                     11
+0199 C  N11      CDPD      COMP 13                   11
+0200 C   11                SETON                     819051
+0201 C   11                MOVELMSG,5     MSG30
+0202 C   11                GOTO ENDS1
+0203 C*
+0204 C* GET PERIOD END DATE
+0205 C                     MOVEL'DATE'    WORK6   6
+0206 C                     MOVE CDPDYY    WORK6
+0207 C                     MOVEL*BLANKS   GSTBKY 12
+0208 C                     MOVELWORK6     GSTBKY
+0209 C                     MOVE CDPD      GSTBKY
+0210 C           GSTBKY    CHAINGSTABL               10
+0211 C   10                SETON                     819051
+0212 C   10                MOVELMSG,5     MSG30
+0213 C   10                GOTO ENDS1
+0214 C** TEST HI DATE
+0215 C           TBPDDT    MULT 10000.01  HIDATE  60
+0216 C                     MOVELHIDATE    HIYR    20
+0217 C           HIYR      IFGE Y2KCMP                     B1                   B2
+0218 C                     Z-ADDY2KCEN    HICN    20       CENTURY
+0219 C                     ELSE                            X1                   X2
+0220 C           1         ADD  Y2KCEN    HICN
+0221 C                     END                             E1                   E2
+0222 C                     MOVELHICN      HIDAT8  80
+0223 C                     MOVE HIDATE    HIDAT8
+0224 C           CDDATE    MULT 10000.01  KYYMD   60
+0225 C                     Z-ADDCDDAT8    KYYMD8  80
+0226 C           KYYMD8    COMP HIDAT8               10
+0227 C   10                SETON                     819051
+0228 C   10                MOVELMSG,6     MSG30
+0229 C   10                GOTO ENDS1
+0230 C*
+0231 C** TEST LO DATE  (DETERMINE KEY)
+0232 C           CDPD      IFEQ 1                                               B2
+0233 C                     Z-ADD13        PDKEY   20
+0234 C           CDPDYY    SUB  1         YRKEY   20
+0235 C                     ELSE                                                 X2
+0236 C           CDPD      SUB  1         PDKEY
+0237 C                     Z-ADDCDPDYY    YRKEY                                 E2
+0238 C                     END
+0239 C                     MOVEL'DATE'    WORK6
+0240 C                     MOVE YRKEY     WORK6
+0241 C                     MOVEL*BLANKS   GSTBKY
+0242 C                     MOVELWORK6     GSTBKY
+0243 C                     MOVE PDKEY     GSTBKY
+0244 C           GSTBKY    CHAINGSTABL               10
+0245 C   10                SETON                     819051
+0246 C   10                MOVELMSG,5     MSG30
+0247 C   10                GOTO ENDS1
+0248 C           TBPDDT    MULT 10000.01  LODATE  60
+0249 C                     MOVELLODATE    LOYR    20
+0250 C           LOYR      IFGE Y2KCMP                                          B2
+0251 C                     Z-ADDY2KCEN    LOCN    20       CENTURY
+0252 C                     ELSE                                                 X2
+0253 C           1         ADD  Y2KCEN    LOCN
+0254 C                     END                                                  E2
+0255 C                     MOVELLOCN      LODAT8  80
+0256 C                     MOVE LODATE    LODAT8
+0257 C           KYYMD8    COMP LODAT8                 1010
+0258 C   10                SETON                     819051
+0259 C   10                MOVELMSG,6     MSG30
+0260 C   10                GOTO ENDS1
+0261 C*
+0262 C                     END                                                  E1
+0263 C**
+0264 C                     SETON                     82
+0265 C                     SETOF                     81
+0266 C                     Z-ADDPJDATE    JRDATE
+0267 C                     Z-ADDPJYMD8    JRYMD8  80
+0268 C                     MOVE *BLANKS   CANCEL
+0269 C*---
+0270 CSR         ENDS1     ENDSR                                                ENDS1
+0271 C************ * * * * * * * * * * * * * * *
+0272 CSR         S2        BEGSR                                                S1
+0273 C           YORN      IFEQ 'Y'
+0274 C                     SETON                     LR
+0275 C                     SETOF                     81
+0276 C                     ELSE
+0277 C                     Z-ADD*ZERO     PJDATE
+0278 C                     SETON                     0181
+0279 C                     SETOF                     0282
+0280 C                     END
+0281 CSR         ENDS2     ENDSR                                                ENDS1
+0282 C************ * * * * * * * * * * * * * * *
+0283 CSR         DATCHK    BEGSR                                                DATCHK
+0284 C* DATE EDIT ROUTINE
+0285 C*
+0286 C* IN:  DATE
+0287 C                     Z-ADDDATE      MMDDYY  60
+0288 C* OUT: 79 INDICATOR ON = ERROR IN DATE
+0289 C*
+0291 C                     SETOF                     79
+0292 C*
+0293 C* BREAKDOWN DATE INTO MONTH, DAY AND YEAR FIELDS
+0294 C                     Z-ADDMMDDYY    $YR     20
+0295 C           MMDDYY    MULT .0001     $MONTH  20     79=*ZERO
+0296 C  N79      MMDDYY    MULT .01       $DAY    20     79=*ZERO
+0297 C   79                GOTO @ENDDT
+0298 C*
+0299 C* VALIDATE MONTH
+0300 C           $MONTH    IFGT 12                         B1
+0301 C                     SETON                     79
+0302 C                     GOTO @ENDDT
+0303 C                     END                             E1
+0304 C*
+0305 C* VALIDATE DAY
+0306 C*
+0307 C*    FOR FEBRUARY
+0308 C           $MONTH    IFEQ 2                          B1
+0309 C*
+0310 C*       IF NOT EVEN CENTURY (00),
+0311 C*       ONLY NEED TO DIVIDE BY 4 TO FIND LEAP YEAR
+0312 C*                (OR MULT BY .25)
+0313 C           $YR       IFNE *ZERO                      B2
+0314 C*
+0315 C           $YR       MULT .25       $CHKY   33
+0316 C*
+0317 C*          LEAP YEAR
+0318 C           $CHKY     IFEQ *ZERO                      B3
+0319 C*
+0320 C           $DAY      IFGT 29                         B4
+0321 C                     SETON                     79
+0322 C                     GOTO @ENDDT
+0323 C                     END                             E4
+0324 C*
+0325 C                     ELSE                            X3
+0326 C*          NOT LEAP YEAR
+0327 C           $DAY      IFGT 28                         B4
+0328 C                     SETON                     79
+0329 C                     GOTO @ENDDT
+0330 C                     END                             E4
+0331 C*
+0332 C                     END                             E3
+0333 C*
+0334 C*
+0335 C                     ELSE                            X2
+0336 C*       IF EVEN CENTURY (00),
+0337 C*       NEED TO DIVIDE THE CENTURY & YEAR TOGETHER
+0338 C*       BY 400 TO FIND LEAP YEAR (OR MULT BT .0025)
+0339 C*
+0340 C*          GET CENTURY
+0341 C           $YR       IFGE Y2KCMP                     B3
+0342 C                     Z-ADDY2KCEN    $CN     20
+0343 C                     ELSE                            X3
+0344 C           1         ADD  Y2KCEN    $CN
+0345 C                     END                             E3
+0346 C*
+0347 C*          COMBINE CENTURY WITH YEAR FOR LEAP YEAR CHECKING
+0348 C                     MOVEL$CN       $YEAR   40
+0349 C                     MOVE $YR       $YEAR
+0350 C*
+0351 C*
+0352 C           $YEAR     MULT .0025     $CHKY
+0353 C*
+0354 C*          LEAP YEAR
+0355 C           $CHKY     IFEQ *ZERO                      B3
+0356 C*
+0357 C           $DAY      IFGT 29                         B4
+0358 C                     SETON                     79
+0359 C                     GOTO @ENDDT
+0360 C                     END                             E4
+0361 C*
+0362 C                     ELSE                            X3
+0363 C*          NOT LEAP YEAR
+0364 C           $DAY      IFGT 28                         B4
+0365 C                     SETON                     79
+0366 C                     GOTO @ENDDT
+0367 C                     END                             E4
+0368 C*
+0369 C                     END                             E3
+0370 C*
+0371 C*
+0372 C                     END                             E2
+0373 C*
+0374 C*
+0375 C                     ELSE                            X1
+0376 C*    FOR ALL OTHER MONTHS
+0377 C           $MONTH    MULT 1.07      $MONTH    H
+0378 C           $MONTH    DIV  2         $CHKM   33
+0379 C           $CHKM     IFEQ *ZERO                      B2
+0380 C           $DAY      IFGT 30                         B3
+0381 C                     SETON                     79
+0382 C                     GOTO @ENDDT
+0383 C                     END                             E3
+0384 C                     ELSE                            X2
+0385 C           $DAY      IFGT 31                         B3
+0386 C                     SETON                     79
+0387 C                     GOTO @ENDDT
+0388 C                     END                             E3
+0389 C                     END                             E2
+0390 C*
+0391 C*
+0392 C                     END                             E1
+0393 C*
+0394 CSR         @ENDDT    ENDSR
+0396 C******************************************
+0397 OSCREEN  D        81
+0398 O                                   K8 'AP200PS1'
+0399 O                         PJDATE     6
+0400 O                      N21HED,1     48
+0401 O                      N21HED,1     90
+0402 O                      N21HED,1    132
+0403 O                       21HED,2     48
+0404 O                       21HED,3     90
+0405 O                       21HED,4    132
+0406 O                         CDDATE   138
+0407 O                         KYPD     140
+0408 O                         KYPDYY   142
+0409 O                         CDPD     144
+0410 O                         CDPDYY   146
+0411 O                         MSG30    176
+0412 OSCREEN  D        82
+0413 O                                   K8 'AP200PS2'
+0414 O                         PJDATE     6
+0415 O                      N21HED,1     48
+0416 O                      N21HED,1     90
+0417 O                      N21HED,1    132
+0418 O                       21HED,2     48
+0419 O                       21HED,3     90
+0420 O                       21HED,4    132
+0421 O                         CDDATE   138
+0422 O                         KYPD     140
+0423 O                         KYPDYY   142
+0424 O                         CDPD     144
+0425 O                         CDPDYY   146
+0426 O                         MSG30    176
+0427 O                         YORN     177
+0429 O*************************************
+0430 OAPPYTR  TADD     LR 21
+0431 O                                    1 ' '
+0432 O                         Z5         6
+0433 O                         Z2         8
+0434 O                         Z8        16
+0435 O                         Z6        22
+0436 O                         CDDATE    28
+0437 O                         Z6        34
+0438 O                                   35 ' '
+0439 O                         CDPDYY    37
+0440 O                         CDPD      39
+0441 O                         CDDAT8    47
+0442 O                         Z8        55
+JB01 O                       22          56 ' '
+JB01 O                       23          56 'A'
+JB01 O                       24          56 'W'
+JB01 O                       25          56 'E'
+** MESSAGES ARRAY
+--->  INVALID DAY ENTERED     01
+--->  INVALID MONTH ENTERED   02
+--->  INVALID YEAR ENTERED    03
+ INVALID DAY FOR THIS MONTH   04
+ INVALID PERIOD/YEAR          05
+DATE INVALID FOR PD/YR KEYED  06
+DATE NOT IN CURRENT FISCAL YR 07
+** HEADINGS ARRAY
+
+         PREPAID VOUCHERS ONLY !
+Please Key Cash Disbursments
+                Journal Date (MMDDYY) --->

@@ -1,0 +1,319 @@
+0002 H    P064                      B                                     AP210
+0003 F*
+0004 F* POST AP INVOICES TO INVENTORY RECEIPTS
+     F*
+JB01 F* JB01   070810 JAN BECCARI
+JB01 F* WHEN SALES ORDER IS ENTERED BYPASS POSTING TO INVENTORY RECEIPT
+     F*
+JB02 F* JB02   091814  JAN BECCARI
+JB02 F* ALLOW RECEIPT # TO BE POSTED TO EITHER INFILE OR HOLDING FILE (INTZH )
+     F*
+JB03 F* JB03   091814  JAN BECCARI
+JB03 F* ADD PRINTER OUTPUT FILE SO I CAN WATCH TO BE SURE IT'S WORKING CORRECTLY
+JB03 F* REMOVE IT WHEN I'M SURE THERE'S NO PROBLEM
+     F*
+MG04 F* MG04   091515  MARTY GREENBERG
+MG04 F* EXPANDED INFIL1 TO 448 AND INCREASED AP INVOICE # TO 20
+MG04 F* ADDED PO NUMBER FROM PO SYSTEM
+0005 F*
+MG04 FAPTRAN  IP  F 404 404 10AI     2 DISK
+MG04 FINFIL1  UF  F 448 448L 9AI  EXTK DISK
+JB02 FINTZH1  UF  F 592 592L 9AI  EXTK DISK
+JB03 FAPLIST  O   F 164 164     OF     PRINTER
+0008 IAPTRAN  NS  01   9 C0  10 C0  11 C0
+0009 I                                        1   1 APHDEL
+0010 I                                        2   30APCONO
+0011 I                                       12  160APVEND
+0012 I                                       18  220ATCNVO                CANCELED VOUCHER
+0014 I                                       67  720APINVD
+JB01 I                                      348 3530ATSORN                SALES ORDER NUMBER
+JB01 I                                      354 3560ATSSRN                SALES SRN NUMBER
+0013 I                                      385 404 APINVN
+0013 I                                      385 394 APIN10
+0015 I        NS  02
+0016 I                                        1   1 APDDEL
+0017 I                                      130 1360APREC#      10
+0018 I                                    P 126 1290APGAL       1111
+0019 I                                       20  270APGL
+0020 I                                    P  53  582APGRAM
+0021 I                                      137 137 APCLCD
+0023 IINFIL1  NS
+0024 I                                       35  410IHNQTY                NET QUANTITY
+0025 I                                       42  432IHNQTF                NET QTY FRACTION
+0026 I                                       44  46 IHUNMS                UNIT OF MEASURE
+0028 I                                      159 1640IHAPID                AP LAST INVOICE DATE (
+0029 I                                      165 1720IHAPLE                AP LAST EXPENSE G/L #
+0030 I                                      173 1740IHAPLP                AP LAST PURCHASE JRNL
+0031 I                                      175 1810IHAPTQ                AP TOTAL QUANTITY
+0032 I                                      182 1832IHAPTF                AP TOTAL QTY FRACTION
+0033 I                                      184 1922IHAPTD                AP TOTAL DOLLARS
+0034 I                                      208 208 IHCLCD                OPEN/CLOSED STATUS-O,C
+0035 I                                      209 2140IHCLDT                CLOSED DATE (YMD)
+0036 I                                      307 3140IHCLD8                CLOSED DATE (CYMD)
+MG04 I                                      321 340 IHAPI#                AP LAST INVOICE NUMBER
+MG04 I                                      341 3510IHPONO                PO NUMBER
+JB02 IINTZH1  NS
+JB02 I                                       28  340IHNQTY                NET QUANTITY
+JB02 I                                       35  362IHNQTF                NET QTY FRACTION
+JB02 I                                       43  45 IHUNMS                UNIT OF MEASURE
+JB02 I                                      259 2640IHAPID                AP LAST INVOICE DATE (
+JB02 I                                      265 2720IHAPLE                AP LAST EXPENSE G/L #
+JB02 I                                      273 2740IHAPLP                AP LAST PURCHASE JRNL
+JB02 I                                      275 2810IHAPTQ                AP TOTAL QUANTITY
+JB02 I                                      282 2832IHAPTF                AP TOTAL QTY FRACTION
+JB02 I                                      171 1792IHAPTD                AP TOTAL DOLLARS
+JB02 I                                      170 170 IHCLCD                OPEN/CLOSED STATUS-O,C
+JB02 I                                      309 3140IHCLDT                CLOSED DATE (YMD)
+JB02 I                                      315 3220IHCLD8                CLOSED DATE (CYMD)
+MG04 I                                      323 342 IHAPI#                AP LAST INVOICE NUMBER
+MG04 I                                      343 3530IHPONO                PO NUMBER FROM PO SYSTEM
+0038 I           UDS
+0039 I                                      100 1050JRDATE                JLB031591:ADD LINE
+0040 I                                      151 154 JRNLID
+0041 I                                      153 154 JR#
+0042 I                                      509 5100Y2KCEN                 19
+0043 I                                      511 5120Y2KCMP                 80
+0044 C* * * * * * * * * * * * * * * * * * * * * * * * * * *
+0045 C           ONCE      IFEQ *ZERO                      B1
+0046 C                     ADD  1         ONCE    10
+0047 C           JRDATE    MULT 10000.01  JRYMD   60
+0048 C                     MOVELJRYMD     JYR     20
+0049 C           JYR       IFGE Y2KCMP                     B1
+0050 C                     Z-ADDY2KCEN    JCN     20       CENTURY
+0051 C                     ELSE                            X1
+0052 C           1         ADD  Y2KCEN    JCN
+0053 C                     END                             E1
+0054 C                     MOVELJCN       JRYM8   80
+0055 C                     MOVE JRYMD     JRYM8
+0056 C                     END                             E1
+0057 C*
+0058 C*
+0059 C                     SETOF                     20
+0060 C                     SETOF                     909192
+0061 C                     Z-ADD*ZEROS    ZERO2   20
+0062 C                     Z-ADD*ZEROS    ZERO4   40
+0063 C                     Z-ADD*ZEROS    ZERO6   60
+0064 C                     Z-ADD*ZEROS    ZERO8   80
+0065 C*
+0066 C  N02                GOTO END
+0067 C*
+0068 C                     Z-ADDAPGRAM    APAMT   92
+0069 C*
+JB01 C* ONLY WHEN SALES ORDER IS ZERO POST TO INVENTORY RECEIPT
+JB01 C           ATSORN    IFEQ *ZERO                      B
+JB01 C*
+0077 C* PROCESS AP INVOICE IF RECEIPT # EXISTS
+0078 C   10      APHDEL    IFNE 'D'                        B1
+0079 C           APDDEL    IFNE 'D'                        B2
+0080 C  N20                EXSR NORMAL
+0081 C   20                EXSR FREIGH
+0082 C                     END                             E2
+0083 C                     END                             E1
+JB01 C*
+JB01 C                     END                             E
+0085 C*
+0086 C           END       TAG
+0087 C*
+0088 C* * * * * * * * * * * * * * * * * * * * * * * * * * *
+0089 C           NORMAL    BEGSR
+0090 C*
+0091 C                     MOVELAPCONO    RCTKEY  9
+0092 C                     MOVE APREC#    RCTKEY
+JB03 C*
+JB03 C                     EXCPTDTL
+0093 C*
+0094 C* LOOK FOR A MATCH, UPDATE IT
+0095 C           RCTKEY    SETLLINFIL1
+JB02 C           RCTKEY    SETLLINTZH1
+0096 C*
+0097 C                     MOVEL*BLANK    EOF     1
+JB02 C                     SETOF                     90
+JB02 C                     SETON                     76    READ THRU INFIL1
+JB02 C                     SETOF                     77    READ THRU INTZH1
+0099 C           EOF       DOUNE*BLANK                     B1
+JB02 C      76   RCTKEY    READEINFIL1                   90EOF
+JB02 C      76 90          DO                              B2 SWITCH FILES
+JB02 C                     SETOF                     7690
+JB02 C                     SETON                     77
+JB02 C                     END                             E2
+JB02 C      77   RCTKEY    READEINTZH1                   90EOF
+0101 C        N90          DO                              B2
+0102 C           IHNQTY    ADD  IHNQTF    RNQTY   92
+0103 C                     SUB  IHAPTQ    RNQTY
+0104 C                     SUB  IHAPTF    RNQTY
+0105 C           APGAL     IFEQ RNQTY                      B3
+0106 C                     ADD  APAMT     IHAPTD
+0107 C                     ADD  APGAL     IHAPTQ
+0108 C           APCLCD    IFEQ 'O'                        B4
+0109 C                     MOVEL'O'       IHCLCD
+0110 C                     ELSE                            X4
+0111 C                     MOVEL'C'       IHCLCD
+0112 C                     Z-ADDJRYMD     IHCLDT
+0113 C                     Z-ADDJRYM8     IHCLD8
+0114 C*
+0115 C                     END                             E4
+0116 C                     MOVEL'E'       EOF
+0117 C                     EXCPTUPDRCP
+JB03 C                     EXCPTDT01
+0118 C                     Z-ADD*ZERO     APAMT
+0119 C                     Z-ADD*ZERO     APGAL
+0120 C                     END                             E3
+0121 C                     END                             E2
+0122 C        N90          END                             E1
+0123 C*
+0124 C* WHEN NO MATCH, READ EACH 'TIL A RECORD WITH MORE GALLONS
+0125 C* THAN AP INVOICE GALLONS IS FOUND AND UPDATE IT
+0126 C           APGAL     IFNE *ZERO                      B1
+0127 C           RCTKEY    SETLLINFIL1
+JB02 C           RCTKEY    SETLLINTZH1
+0128 C*
+0129 C                     MOVEL*BLANK    EOF
+0130 C                     SETOF                     90
+JB02 C                     SETON                     76    READ THRU INFIL1
+JB02 C                     SETOF                     77    READ THRU INTZH1
+0131 C           EOF       DOUNE*BLANK                     B2
+JB02 C      76   RCTKEY    READEINFIL1                   90EOF
+JB02 C      76 90          DO                              B3 SWITCH FILES
+JB02 C                     SETOF                     7690
+JB02 C                     SETON                     77
+JB02 C                     END                             E3
+JB02 C      77   RCTKEY    READEINTZH1                   90EOF
+0133 C        N90          DO                              B3
+0134 C           IHNQTY    ADD  IHNQTF    RNQTY
+0135 C                     SUB  IHAPTQ    RNQTY
+0136 C                     SUB  IHAPTF    RNQTY
+0137 C           APGAL     IFLT RNQTY                      B4
+0138 C                     ADD  APAMT     IHAPTD
+0139 C                     ADD  APGAL     IHAPTQ
+0140 C           APCLCD    IFEQ 'O'                        B5
+0141 C                     MOVEL'O'       IHCLCD
+0142 C                     ELSE                            X5
+0143 C                     MOVEL'C'       IHCLCD
+0144 C                     Z-ADDJRYMD     IHCLDT
+0145 C                     Z-ADDJRYM8     IHCLD8
+0146 C                     END                             E5
+0147 C                     MOVEL'E'       EOF
+0148 C                     EXCPTUPDRCP
+JB03 C                     EXCPTDT02
+0149 C                     Z-ADD*ZERO     APAMT
+0150 C                     Z-ADD*ZERO     APGAL
+0151 C                     END                             E4
+0152 C                     END                             E3
+0153 C        N90          END                             E2
+0154 C                     END                             E1
+0155 C*
+0156 C* WHEN NO MATCH AND NO RECORD WITH MORE GALLONS THAN AP INVOICE
+0157 C* GALLONS IS FOUND, UPDATE THE FIRST RECEIPT RECORD
+0158 C           APGAL     IFNE *ZERO                      B1
+0159 C           RCTKEY    SETLLINFIL1
+JB02 C           RCTKEY    SETLLINTZH1
+0160 C*
+0161 C                     SETOF                     90
+JB02 C                     SETON                     76    READ THRU INFIL1
+JB02 C                     SETOF                     77    READ THRU INTZH1
+JB02 C      76   RCTKEY    READEINFIL1                   90EOF
+JB02 C      76 90          DO                              B2 SWITCH FILES
+JB02 C                     SETOF                     7690
+JB02 C                     SETON                     77
+JB02 C                     END                             E2
+JB02 C      77   RCTKEY    READEINTZH1                   90EOF
+0163 C        N90          DO                              B2
+0164 C                     ADD  APAMT     IHAPTD
+0165 C                     ADD  APGAL     IHAPTQ
+0166 C           APCLCD    IFEQ 'O'                        B5
+0167 C                     MOVEL'O'       IHCLCD
+0168 C                     ELSE                            X5
+0169 C                     MOVEL'C'       IHCLCD
+0170 C                     Z-ADDJRYMD     IHCLDT
+0171 C                     Z-ADDJRYM8     IHCLD8
+0172 C                     END                             E5
+0173 C                     EXCPTUPDRCP
+JB03 C                     EXCPTDT03
+0174 C                     Z-ADD*ZERO     APAMT
+0175 C                     Z-ADD*ZERO     APGAL
+0176 C                     END                             E2
+0177 C                     END                             E1
+0178 C*
+0179 C                     ENDSR
+0180 C* * * * * * * * * * * * * * * * * * * * * * * * * * *
+0181 C           FREIGH    BEGSR
+0182 C                     SETON                     11
+0183 C                     EXSR NORMAL
+0184 C                     SETOF                     11
+0185 C                     ENDSR
+0186 C* * * * * * * * * * * * * * * * * * * * * * * * * * *
+JB02 OINFIL1  E           76   UPDRCP
+0189 O                         JRYMD    164
+0190 O                         APGL     172
+0191 O                         JR#      174
+0192 O                         IHAPTQ   181
+0193 O                         IHAPTF   183
+0194 O                         IHAPTD   192
+0195 O                         IHCLCD   208
+0196 O                         IHCLDT   214
+0197 O                         IHCLD8   314
+MG04 O                         APINVN   340
+MG04 O                         IHPONO   351
+JB02 O*
+JB02 OINTZH1  E           77   UPDRCP
+JB02 O                         JRYMD    264
+JB02 O                         APGL     272
+JB02 O                         JR#      274
+JB02 O                         IHAPTQ   281
+JB02 O                         IHAPTF   283
+JB02 O                         IHAPTD   179
+JB02 O                         IHCLCD   170
+JB02 O                         IHCLDT   314
+JB02 O                         IHCLD8   322
+MG04 O                         APINVN   342
+MG04 O                         IHPONO   353
+JB03 O*
+JB03 O* * * * * * * * * * * * * * * * * * * * * * * * * * *
+JB03 OAPLIST  E 21             DTL
+JB03 O                         APCONO     2
+JB03 O                         APVEND     8
+JB03 O                         APINVN    20
+JB03 O                         APINVDY   30
+JB03 O                         APGL      40 '      -  '
+JB03 O                         APREC#    49
+JB03 O                                   55 'GAL:'
+JB03 O                         APGAL 4   65
+JB03 O                         APGRAMM   80
+JB03 O                         APCLCD    82
+JB03 O        E  1             DT01
+JB03 O                                   90 'DT01'
+JB03 O                    76             94 '76'
+JB03 O                    77             96 '77'
+JB03 O                         JRYMD Y  106
+JB03 O                         JR#      109
+JB03 O                         IHAPTQ4  122
+JB03 O                         IHAPTF4  127
+JB03 O                         IHAPTDM  142
+JB03 O                         IHCLCD   144
+JB03 O                         IHCLDTY  154
+JB03 O                         IHCLD8   164
+JB03 O        E  1             DT02
+JB03 O                                   90 'DT02'
+JB03 O                    76             94 '76'
+JB03 O                    77             96 '77'
+JB03 O                         JRYMD Y  106
+JB03 O                         JR#      109
+JB03 O                         IHAPTQ4  122
+JB03 O                         IHAPTF4  127
+JB03 O                         IHAPTDM  142
+JB03 O                         IHCLCD   144
+JB03 O                         IHCLDTY  154
+JB03 O                         IHCLD8   164
+JB03 O        E  1             DT03
+JB03 O                                   90 'DT03'
+JB03 O                    76             94 '76'
+JB03 O                    77             96 '77'
+JB03 O                         JRYMD Y  106
+JB03 O                         JR#      109
+JB03 O                         IHAPTQ4  122
+JB03 O                         IHAPTF4  127
+JB03 O                         IHAPTDM  142
+JB03 O                         IHCLCD   144
+JB03 O                         IHCLDTY  154
+JB03 O                         IHCLD8   164
+JB03 O*
