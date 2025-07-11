@@ -45,12 +45,7 @@ markdown_extensions:
   - attr_list           # Allow custom attributes in Markdown
   - md_in_html          # Allow HTML in Markdown
 
-# Optional: Custom navigation (if you want to override awesome-pages for specific sections)
-nav:
-  - Home: index.md
-  - User Guide: user-guide/  # Folder-based navigation, auto-populated by awesome-pages
-  - API: api/
-  - Troubleshooting: troubleshooting/
+
 
 # Optional: Extra settings for advanced features
 extra:
