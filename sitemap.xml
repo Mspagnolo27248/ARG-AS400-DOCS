@@ -224,4 +224,16 @@
          <loc>https://&lt;your-domain&gt;.github.io/&lt;repository&gt;/accounts-payable/06%20ADP%20Expenses/AP145%20RPG/</loc>
          <lastmod>2025-07-11</lastmod>
     </url>
+    <url>
+         <loc>https://&lt;your-domain&gt;.github.io/&lt;repository&gt;/accounts-receivable/01%20Customer/01%20Customer%20Master%20AP900/AP900%20OCL/</loc>
+         <lastmod>2025-07-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;your-domain&gt;.github.io/&lt;repository&gt;/accounts-receivable/01%20Customer/01%20Customer%20Master%20AP900/AP900%20RPGLE/</loc>
+         <lastmod>2025-07-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;your-domain&gt;.github.io/&lt;repository&gt;/accounts-receivable/01%20Customer/01%20Customer%20Master%20AP900/Summary%20AP900%20Customer/</loc>
+         <lastmod>2025-07-11</lastmod>
+    </url>
 </urlset>
